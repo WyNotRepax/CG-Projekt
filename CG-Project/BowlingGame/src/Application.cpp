@@ -63,7 +63,7 @@ int main() {
 	}
 
 	// Create GLFW window
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "Bowling Game", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(1280, 720, "Bowling Spiel", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
 		return EXIT_FAILURE;
