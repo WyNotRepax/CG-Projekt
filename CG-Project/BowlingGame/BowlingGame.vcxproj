@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{d4485f9a-bf21-4cac-b280-c86bc6dbe355}</ProjectGuid>
-    <RootNamespace>OpenGLTutorial</RootNamespace>
+    <RootNamespace>BowlingGame</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>BowlingGame</ProjectName>
   </PropertyGroup>
