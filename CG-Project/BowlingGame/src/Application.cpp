@@ -68,7 +68,7 @@ int main() {
 		glfwTerminate();
 		return EXIT_FAILURE;
 	}
-
+	
 	// Create OpenGL Rendering Context and make that Context the current one
 	glfwMakeContextCurrent(window);
 
