@@ -89,7 +89,7 @@ Matrix& Matrix::rotationY(float angle)
 {
 	float c = (float)cos(angle);
 	float s = (float)sin(angle);
-	LOG("cos(%f) = %f, sin(%f) = %f\n", angle, c, angle, s);
+	//LOG("cos(%f) = %f, sin(%f) = %f\n", angle, c, angle, s);
 	m00 = c; m01 = 0; m02 = -s; m03 = 0;
 	m10 = 0; m11 = 1; m12 = 0; m13 = 0;
 	m20 = s; m21 = 0; m22 = c; m23 = 0;

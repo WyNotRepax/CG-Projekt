@@ -85,7 +85,7 @@ int main() {
 	std::cout << glGetString(GL_VERSION) << std::endl;
 #endif
 
-	pCamera = new Camera(Matrix().lookAt(Vector(0, 0, 0), Vector(0, 1, 0), Vector(5, 2, 0)), Matrix().perspective(70, 16.0f / 9.0f, 0.01, 10));
+	pCamera = new Camera(Matrix().lookAt(Vector(0, 0, 0), Vector(0, 1, 0), Vector(5, 2, 0)), Matrix().perspective(70, 16.0f / 9.0f, 0.01, 20));
 	pGameRenderer = new GameRenderer(pCamera);
 
 	float positions[6] = {
@@ -116,7 +116,7 @@ int main() {
 	Matrix testOrientation = Matrix().identity();
 	Matrix testOrientationDelta = Matrix().roationAxis(M_PI * 2 / (8 * 60.0f),Vector(0,1,0).normalize());
 
-	Model model = Model(MODEL_DIR"/enemy_body.dae");
+	Model model = Model(MODEL_DIR"/pin.dae");
 
 	DebugRenderer::setCamera(pCamera);
 

@@ -18,7 +18,7 @@ void Model::draw(const Camera* pCamera)const {
 	for (unsigned int meshIndex = 0; meshIndex < mMeshCount; meshIndex++) {
 		Mesh& currMesh = mMeshes[meshIndex];
 
-		//LOG("TRANSFORM: %s\n", ((std::string)currMesh.transform).c_str());
+		LOG("TRANSFORM:\n %s\n", ((std::string)currMesh.transform).c_str());
 
 		pShader->setModelViewProj(pCamera->getViewProj()* currMesh.transform);
 		pShader->setColor(0, 1, 0);
@@ -66,6 +66,7 @@ bool Model::loadMeshes(const aiScene* pScene)
 		// Load Vertex Data
 		float* vertexData = new float[3 * pCurrAIMesh->mNumVertices];
 		float* vertexNormalData = new float[3 * pCurrAIMesh->mNumVertices];
+		float* vertexTextureData = new float[2 * pCurrAIMesh->mNumVertices];
 		for (unsigned int vertexIndex = 0; vertexIndex < pCurrAIMesh->mNumVertices; vertexIndex++) {
 			vertexData[3 * vertexIndex + 0] = pCurrAIMesh->mVertices[vertexIndex].x;
 			vertexData[3 * vertexIndex + 1] = pCurrAIMesh->mVertices[vertexIndex].y;
@@ -73,6 +74,8 @@ bool Model::loadMeshes(const aiScene* pScene)
 			vertexNormalData[3 * vertexIndex + 0] = pCurrAIMesh->mNormals[vertexIndex].x;
 			vertexNormalData[3 * vertexIndex + 1] = pCurrAIMesh->mNormals[vertexIndex].y;
 			vertexNormalData[3 * vertexIndex + 2] = pCurrAIMesh->mNormals[vertexIndex].z;
+			vertexTextureData[2 * vertexIndex + 0] = pCurrAIMesh->mTextureCoords[0][vertexIndex].x;
+			vertexTextureData[2 * vertexIndex + 1] = pCurrAIMesh->mTextureCoords[0][vertexIndex].y;
 			//LOG("NORMAL %d: %f,%f,%f\n", vertexIndex, pCurrAIMesh->mNormals[vertexIndex].x, pCurrAIMesh->mNormals[vertexIndex].y, pCurrAIMesh->mNormals[vertexIndex].z);
 		}
 
@@ -99,6 +102,7 @@ bool Model::loadMeshes(const aiScene* pScene)
 
 		delete[] vertexData;
 		delete[] vertexNormalData;
+		delete[] vertexTextureData;
 
 		// Load Index Data
 
