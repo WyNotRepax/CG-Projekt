@@ -32,7 +32,6 @@ static GLuint CompileShader(GLenum type, const std::string& source) {
 		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
 		char* message = new char[length];
 		glGetShaderInfoLog(id, length, &length, message);
-		//BS_ERR(message,length);
 		delete[] message;
 		glDeleteShader(id);
 		return 0;
@@ -117,7 +116,7 @@ int main() {
 	Matrix testOrientation = Matrix().identity();
 	Matrix testOrientationDelta = Matrix().roationAxis(M_PI * 2 / (8 * 60.0f),Vector(0,1,0).normalize());
 
-
+	Model model = Model(MODEL_DIR"/enemy_body.dae");
 
 	DebugRenderer::setCamera(pCamera);
 
@@ -139,7 +138,8 @@ int main() {
 		testOrientation *= testOrientationDelta;
 		DebugRenderer::drawAABB(aabb,testOrientation);
 		//DebugRenderer::drawLine(Vector(0, 0, 0), Vector(0, 1, 0),testOrientation);
-		DebugRenderer::drawSphere(Vector(0,0,0),0.5f);
+		//DebugRenderer::drawSphere(Vector(0,0,0),0.5f);
+		model.draw(pCamera);
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();

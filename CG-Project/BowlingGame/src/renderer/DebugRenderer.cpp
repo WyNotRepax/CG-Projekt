@@ -97,7 +97,7 @@ void DebugRenderer::init()
 			float z = r * sin(hAngle);
 			unsigned int index = (xIndex + yIndex * SPHERE_H_SEGMENT_COUNT);
 			unsigned int offset = 3 * index;
-			LOG("index:%d,x:%f ,y:%f, z:%f, hAngle:%f(%f), vAngle:%f(%f)\n", index, x, y, z, hAngle, hAngle * (360.0f / (2 * M_PI)), vAngle, vAngle * (360.0f / (2 * M_PI)));
+			//LOG("index:%d,x:%f ,y:%f, z:%f, hAngle:%f(%f), vAngle:%f(%f)\n", index, x, y, z, hAngle, hAngle * (360.0f / (2 * M_PI)), vAngle, vAngle * (360.0f / (2 * M_PI)));
 			sphereVertexData[offset + 0] = x;
 			sphereVertexData[offset + 1] = y;
 			sphereVertexData[offset + 2] = z;
@@ -108,7 +108,7 @@ void DebugRenderer::init()
 				sphereIndexData.push_back(index + SPHERE_H_SEGMENT_COUNT);
 			}
 		}
-		LOG("Layer %d Done\n", yIndex);
+		//LOG("Layer %d Done\n", yIndex);
 	}
 	LOG_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(sphereVertexData), sphereVertexData, GL_STATIC_DRAW);
 	LOG_CALL(glVertexAttribPointer, 0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);

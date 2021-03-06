@@ -7,6 +7,8 @@
 
 Model::Model(const std::string& path) {
 	pShader = ConstantShader::GetInstance();
+	bool loaded = load(path);
+	assert(loaded);
 }
 
 void Model::draw(const Camera* pCamera)const {
@@ -15,13 +17,20 @@ void Model::draw(const Camera* pCamera)const {
 	assert(pShader != nullptr);
 	for (unsigned int meshIndex = 0; meshIndex < mMeshCount; meshIndex++) {
 		Mesh& currMesh = mMeshes[meshIndex];
-		pShader->setModelViewProj(currMesh.transform * pCamera->getViewProj());
+
+		LOG("TRANSFORM: %s\n", ((std::string)currMesh.transform).c_str());
+
+		pShader->setModelViewProj(pCamera->getViewProj()* currMesh.transform);
+		pShader->setColor(0, 1, 0);
 		pShader->activate();
-		LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, currMesh.indexBufferId);
+
 		LOG_CALL(glBindVertexArray, currMesh.vaoId);
+		LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, currMesh.indexBufferId);
 		LOG_CALL(glEnableVertexAttribArray, 0);
 		LOG_CALL(glDrawElements, GL_TRIANGLES, currMesh.indexCount, GL_UNSIGNED_INT, 0);
 		LOG_CALL(glDisableVertexAttribArray, 0);
+		LOG_CALL(glBindVertexArray, 0);
+
 	}
 	LOG_CALL(glBindVertexArray, 0);
 	LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -44,30 +53,35 @@ bool Model::load(const std::string& path)
 
 bool Model::loadMeshes(const aiScene* pScene)
 {
-	bool err = false;
+	bool success = true;
+	LOG("Loading Scene with %d Meshes\n", pScene->mNumMeshes);
 	mMeshCount = pScene->mNumMeshes;
 	mMeshes = new struct Mesh[mMeshCount];
 	for (unsigned int meshIndex = 0; meshIndex < mMeshCount; meshIndex++) {
-		aiMesh* pCurrMesh = pScene->mMeshes[meshIndex];
-
+		aiMesh* pCurrAIMesh = pScene->mMeshes[meshIndex];
+		Mesh* pCurrMesh = &mMeshes[meshIndex];
+		LOG("Loading Mesh %s %d vertices \n", pCurrAIMesh->mName.C_Str(), pCurrAIMesh->mNumVertices);
 		// Load Vertex Data
-		float* vertexData = new float[3 * pCurrMesh->mNumVertices];
-		float* vertexNormalData = new float[3 * pCurrMesh->mNumVertices];
-		for (unsigned int vertexIndex = 0; vertexIndex < pCurrMesh->mNumVertices; vertexIndex++) {
-			vertexData[3 * vertexIndex + 0] = pCurrMesh->mVertices[vertexIndex].x;
-			vertexData[3 * vertexIndex + 1] = pCurrMesh->mVertices[vertexIndex].y;
-			vertexData[3 * vertexIndex + 2] = pCurrMesh->mVertices[vertexIndex].z;
+		float* vertexData = new float[3 * pCurrAIMesh->mNumVertices];
+		float* vertexNormalData = new float[3 * pCurrAIMesh->mNumVertices];
+		for (unsigned int vertexIndex = 0; vertexIndex < pCurrAIMesh->mNumVertices; vertexIndex++) {
+			vertexData[3 * vertexIndex + 0] = pCurrAIMesh->mVertices[vertexIndex].x;
+			vertexData[3 * vertexIndex + 1] = pCurrAIMesh->mVertices[vertexIndex].y;
+			vertexData[3 * vertexIndex + 2] = pCurrAIMesh->mVertices[vertexIndex].z;
 		}
-		LOG_CALL(glGenVertexArrays, 1, &mMeshes[meshIndex].vaoId);
-		LOG_CALL(glBindVertexArray, mMeshes[meshIndex].vaoId);
+
+		LOG_CALL(glGenVertexArrays, 1, &pCurrMesh->vaoId);
+		LOG_CALL(glBindVertexArray, pCurrMesh->vaoId);
 		GLuint vertexBufferId;
 
 		LOG_CALL(glGenBuffers, 1, &vertexBufferId);
+		LOG("Buffer id:%d\n", vertexBufferId);
 		LOG_CALL(glBindBuffer, GL_ARRAY_BUFFER, vertexBufferId);
-		LOG_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(float) * 3 * pCurrMesh->mNumVertices, vertexData, GL_STATIC_DRAW);
+		LOG_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(float) * 3 * pCurrAIMesh->mNumVertices, vertexData, GL_STATIC_DRAW);
 
-		LOG_CALL(glVertexAttribPointer, 0, 3, GL_FLOAT, false, 0, 0);
-
+		float test[3];
+		LOG_CALL(glGetBufferSubData, GL_ARRAY_BUFFER, 0, sizeof(float) * 3, test);
+		LOG_CALL(glVertexAttribPointer, 0, 3, GL_FLOAT, false, sizeof(float) * 3, 0);
 		LOG_CALL(glBindVertexArray, 0);
 		// There might be a driver bug that is triggered by that line so don't i guess? 
 		// See https://stackoverflow.com/questions/27937285/when-should-i-call-gldeletebuffers
@@ -79,30 +93,34 @@ bool Model::loadMeshes(const aiScene* pScene)
 
 		// Load Index Data
 
-		mMeshes[meshIndex].indexCount = pCurrMesh->mNumFaces * 3;
-		unsigned int* indexData = new unsigned int[pCurrMesh->mNumFaces * 3];
-		for (unsigned int faceIndex = 0; faceIndex < pCurrMesh->mNumFaces; faceIndex++) {
-			if (pCurrMesh->mFaces[faceIndex].mNumIndices != 3) {
-				LOG("Skipped Mesh %d, Face %d because it has %d indices (expected 3)\n", meshIndex, faceIndex, pCurrMesh->mFaces[faceIndex].mNumIndices);
-				err = true;
+		mMeshes[meshIndex].indexCount = pCurrAIMesh->mNumFaces * 3;
+		unsigned int* indexData = new unsigned int[pCurrAIMesh->mNumFaces * 3];
+		for (unsigned int faceIndex = 0; faceIndex < pCurrAIMesh->mNumFaces; faceIndex++) {
+			aiFace* pFace = &pCurrAIMesh->mFaces[faceIndex];
+			if (pFace->mNumIndices != 3) {
+				LOG("Skipped Mesh %d, Face %d because it has %d indices (expected 3)\n", meshIndex, faceIndex, pFace->mNumIndices);
+				success = false;
 				indexData[faceIndex * 3 + 0] = 0;
 				indexData[faceIndex * 3 + 1] = 0;
 				indexData[faceIndex * 3 + 2] = 0;
 			}
 			else {
 				for (unsigned int i = 0; i < 3; i++) {
-					indexData[faceIndex * 3 + i] = pCurrMesh->mFaces[faceIndex].mIndices[i];
+					indexData[faceIndex * 3 + i] = pFace->mIndices[i];
 				}
 			}
 		}
-
-		LOG_CALL(glGenBuffers, 1, &mMeshes[meshIndex].indexBufferId);
-		LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, mMeshes[meshIndex].indexBufferId);
-		LOG_CALL(glBufferData, GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mMeshes[meshIndex].indexCount, indexData, GL_STATIC_DRAW);
+		for (unsigned int i = 0; i < mMeshes[meshIndex].indexCount; i++) {
+			//LOG("INDEX[%d]=%d\n", i, indexData[i]);
+		}
+		LOG("%d\n", sizeof(unsigned int) * pCurrMesh->indexCount);
+		LOG_CALL(glGenBuffers, 1, &pCurrMesh->indexBufferId);
+		LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, pCurrMesh->indexBufferId);
+		LOG_CALL(glBufferData, GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * pCurrMesh->indexCount, indexData, GL_STATIC_DRAW);
 		LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, 0);
 		delete[] indexData;
 	}
-	return err;
+	return success;
 }
 
 void Model::loadTransform(const aiScene* pScene)

@@ -199,6 +199,7 @@
     <ClInclude Include="src\math\VectorMath.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\Hausarbeit_Computergrafik_Benno_Steinkamp\CLion\res\models\enemy_body.dae" />
     <None Include="res\shader\fsconstant.glsl" />
     <None Include="res\shader\vsconstant.glsl" />
   </ItemGroup>
