@@ -125,17 +125,18 @@ int main() {
 	LOG("After\n");
 	// Main Application loop
 	int frameN = 0;
+	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(window)) {
-		//pCamera->setView(pCamera->getView() * Matrix().rotationY(0.01f));
+		pCamera->setView(pCamera->getView() * Matrix().rotationY(0.01f));
 		//pConstantShader->setColor(n, 0.0f, 0.0f);
 		if (frameN < 120 || true)
 		{
-			glClear(GL_COLOR_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 
 		//pConstantShader->activate();
 		//glDrawArrays(GL_LINE_STRIP, 0, 3);
-		testOrientation *= testOrientationDelta;
+		//testOrientation *= testOrientationDelta;
 		DebugRenderer::drawAABB(aabb,testOrientation);
 		//DebugRenderer::drawLine(Vector(0, 0, 0), Vector(0, 1, 0),testOrientation);
 		//DebugRenderer::drawSphere(Vector(0,0,0),0.5f);

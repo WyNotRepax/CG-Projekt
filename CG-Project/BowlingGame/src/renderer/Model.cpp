@@ -18,7 +18,7 @@ void Model::draw(const Camera* pCamera)const {
 	for (unsigned int meshIndex = 0; meshIndex < mMeshCount; meshIndex++) {
 		Mesh& currMesh = mMeshes[meshIndex];
 
-		LOG("TRANSFORM: %s\n", ((std::string)currMesh.transform).c_str());
+		//LOG("TRANSFORM: %s\n", ((std::string)currMesh.transform).c_str());
 
 		pShader->setModelViewProj(pCamera->getViewProj()* currMesh.transform);
 		pShader->setColor(0, 1, 0);
@@ -27,8 +27,10 @@ void Model::draw(const Camera* pCamera)const {
 		LOG_CALL(glBindVertexArray, currMesh.vaoId);
 		LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, currMesh.indexBufferId);
 		LOG_CALL(glEnableVertexAttribArray, 0);
+		LOG_CALL(glEnableVertexAttribArray, 1);
 		LOG_CALL(glDrawElements, GL_TRIANGLES, currMesh.indexCount, GL_UNSIGNED_INT, 0);
 		LOG_CALL(glDisableVertexAttribArray, 0);
+		LOG_CALL(glDisableVertexAttribArray, 1);
 		LOG_CALL(glBindVertexArray, 0);
 
 	}
@@ -68,20 +70,27 @@ bool Model::loadMeshes(const aiScene* pScene)
 			vertexData[3 * vertexIndex + 0] = pCurrAIMesh->mVertices[vertexIndex].x;
 			vertexData[3 * vertexIndex + 1] = pCurrAIMesh->mVertices[vertexIndex].y;
 			vertexData[3 * vertexIndex + 2] = pCurrAIMesh->mVertices[vertexIndex].z;
+			vertexNormalData[3 * vertexIndex + 0] = pCurrAIMesh->mNormals[vertexIndex].x;
+			vertexNormalData[3 * vertexIndex + 1] = pCurrAIMesh->mNormals[vertexIndex].y;
+			vertexNormalData[3 * vertexIndex + 2] = pCurrAIMesh->mNormals[vertexIndex].z;
+			//LOG("NORMAL %d: %f,%f,%f\n", vertexIndex, pCurrAIMesh->mNormals[vertexIndex].x, pCurrAIMesh->mNormals[vertexIndex].y, pCurrAIMesh->mNormals[vertexIndex].z);
 		}
 
 		LOG_CALL(glGenVertexArrays, 1, &pCurrMesh->vaoId);
 		LOG_CALL(glBindVertexArray, pCurrMesh->vaoId);
-		GLuint vertexBufferId;
 
+		GLuint vertexBufferId;
 		LOG_CALL(glGenBuffers, 1, &vertexBufferId);
-		LOG("Buffer id:%d\n", vertexBufferId);
 		LOG_CALL(glBindBuffer, GL_ARRAY_BUFFER, vertexBufferId);
 		LOG_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(float) * 3 * pCurrAIMesh->mNumVertices, vertexData, GL_STATIC_DRAW);
-
-		float test[3];
-		LOG_CALL(glGetBufferSubData, GL_ARRAY_BUFFER, 0, sizeof(float) * 3, test);
 		LOG_CALL(glVertexAttribPointer, 0, 3, GL_FLOAT, false, sizeof(float) * 3, 0);
+
+		GLuint vertexNormalBufferId;
+		LOG_CALL(glGenBuffers, 1, &vertexNormalBufferId);
+		LOG_CALL(glBindBuffer, GL_ARRAY_BUFFER, vertexNormalBufferId);
+		LOG_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(float) * 3 * pCurrAIMesh->mNumVertices, vertexNormalData, GL_STATIC_DRAW);
+		LOG_CALL(glVertexAttribPointer, 1, 3, GL_FLOAT, false, sizeof(float) * 3, 0);
+
 		LOG_CALL(glBindVertexArray, 0);
 		// There might be a driver bug that is triggered by that line so don't i guess? 
 		// See https://stackoverflow.com/questions/27937285/when-should-i-call-gldeletebuffers
