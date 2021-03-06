@@ -14,7 +14,7 @@ Camera::Camera(const Matrix& view, const Matrix& proj):view(view),proj(proj)
     updateViewProj();
 }
 
-Matrix Camera::getView()
+Matrix Camera::getView() const
 {
     return view;
 }
@@ -25,7 +25,7 @@ void Camera::setView(const Matrix& m)
     updateViewProj();
 }
 
-Matrix Camera::getProj()
+Matrix Camera::getProj() const
 {
     return Matrix();
 }
@@ -36,7 +36,7 @@ void Camera::setProj(const Matrix& m)
     updateViewProj();
 }
 
-Matrix Camera::getViewProj()
+Matrix Camera::getViewProj() const
 {
     return viewProj;
 }

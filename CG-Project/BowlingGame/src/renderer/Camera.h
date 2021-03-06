@@ -14,12 +14,12 @@ public:
 	Camera();
 	Camera(const Matrix& view, const Matrix& proj);
 
-	Matrix getView();
+	Matrix getView() const;
 	void setView(const Matrix& m);
 	
-	Matrix getProj();
+	Matrix getProj() const;
 	void setProj(const Matrix& m);
 
-	Matrix getViewProj();
+	Matrix getViewProj() const;
 };
 

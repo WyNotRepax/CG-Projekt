@@ -9,9 +9,14 @@ class GameObject
 private:
 	Matrix mTransform;
 	Model* pModel;
-	Collider* collider;
+	bool mDestroyModel;
+	Collider* pCollider;
 
 public:
+	GameObject();
+	~GameObject();
+	void setModel(Model* pModel, bool destroy = false);
+
 	void draw(Camera* pCamera);
 	// TODO Collider Stuff
 };
