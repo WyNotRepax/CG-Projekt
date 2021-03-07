@@ -1,5 +1,5 @@
 #include "SphereCollider.h"
-#include "renderer/DebugRenderer.h"
+#include "../renderer/DebugRenderer.h"
 
 SphereCollider::SphereCollider():mRadius(1),mRelativeTransform(Matrix().identity()) {
 

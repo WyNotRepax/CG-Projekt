@@ -1,5 +1,5 @@
 #pragma once
-#include "renderer/Camera.h"
+#include "../renderer/Camera.h"
 
 class Collider
 {
