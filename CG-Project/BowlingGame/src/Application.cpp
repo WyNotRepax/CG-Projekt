@@ -12,6 +12,7 @@
 #include "renderer/GameRenderer.h"
 #include "renderer/DebugRenderer.h"
 #include "Logging.h"
+#include "SphereCollider.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -55,7 +56,7 @@ static GLuint CreateShader(const std::string& vertexShader, const std::string& f
 }
 
 int main() {
-
+	std::cout << "WTF";
 	// Initialize GLFW
 	if (!glfwInit()) {
 		return EXIT_FAILURE;
@@ -85,7 +86,7 @@ int main() {
 	std::cout << glGetString(GL_VERSION) << std::endl;
 #endif
 
-	pCamera = new Camera(Matrix().lookAt(Vector(0, 0, 0), Vector(0, 1, 0), Vector(5, 2, 0)), Matrix().perspective(70, 16.0f / 9.0f, 0.01, 20));
+	pCamera = new Camera(Matrix().lookAt(Vector(0, 0, 0), Vector(0, 1, 0), Vector(5, 0, 0)), Matrix().perspective(70, 16.0f / 9.0f, 0.01, 20));
 	pGameRenderer = new GameRenderer(pCamera);
 
 	float positions[6] = {
@@ -117,8 +118,13 @@ int main() {
 	Matrix testOrientationDelta = Matrix().roationAxis(M_PI * 2 / (8 * 60.0f),Vector(0,1,0).normalize());
 
 	Model model = Model(MODEL_DIR"/pin.dae");
+	SphereCollider sphereCollider =  SphereCollider();
+
+	Matrix cylinderTransform = Matrix().scale(0.5,1.5,0.5);
 
 	DebugRenderer::setCamera(pCamera);
+
+
 
 	AABB aabb(Vector(-1, -1, -1), Vector(1, 1, 1));
 	float n = 0;
@@ -127,7 +133,7 @@ int main() {
 	int frameN = 0;
 	glEnable(GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(window)) {
-		pCamera->setView(pCamera->getView() * Matrix().rotationY(0.01f));
+		//pCamera->setView(pCamera->getView() * Matrix().rotationY(0.01f));
 		//pConstantShader->setColor(n, 0.0f, 0.0f);
 		if (frameN < 120 || true)
 		{
@@ -137,10 +143,12 @@ int main() {
 		//pConstantShader->activate();
 		//glDrawArrays(GL_LINE_STRIP, 0, 3);
 		//testOrientation *= testOrientationDelta;
-		DebugRenderer::drawAABB(aabb,testOrientation);
+		//DebugRenderer::drawAABB(aabb,testOrientation);
 		//DebugRenderer::drawLine(Vector(0, 0, 0), Vector(0, 1, 0),testOrientation);
 		//DebugRenderer::drawSphere(Vector(0,0,0),0.5f);
 		model.draw(pCamera);
+		//sphereCollider.debugDraw2(pCamera);
+		DebugRenderer::drawCylinder(cylinderTransform);
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();

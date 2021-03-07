@@ -10,6 +10,7 @@
 #define SPHERE_H_SEGMENT_COUNT 20
 #define SPHERE_V_SEGMENT_COUNT 10
 #define SPHERE_TOTAL_SEGMENT_COUNT SPHERE_H_SEGMENT_COUNT*SPHERE_V_SEGMENT_COUNT
+#define CYLINDER_SEGMENT_COUNT 20
 
 bool DebugRenderer::sInit = true;
 Camera* DebugRenderer::pCamera = nullptr;
@@ -26,7 +27,12 @@ GLuint DebugRenderer::sAABBIndexBufferId = 0;
 GLuint DebugRenderer::sSphereVertexBufferId = 0;
 GLuint DebugRenderer::sSphereVaoId = 0;
 GLuint DebugRenderer::sSphereIndexBufferId = 0;
-GLuint DebugRenderer::sSphereIndexCount = 0;
+unsigned int DebugRenderer::sSphereIndexCount = 0;
+
+
+GLuint DebugRenderer::sCylinderVaoId = 0;
+GLuint DebugRenderer::sCylinderIndexBufferId = 0;
+unsigned int DebugRenderer::sCylinderIndexCount = 0;
 
 void DebugRenderer::init()
 {
@@ -102,7 +108,7 @@ void DebugRenderer::init()
 			sphereVertexData[offset + 1] = y;
 			sphereVertexData[offset + 2] = z;
 			sphereIndexData.push_back(index);
-			sphereIndexData.push_back(((xIndex+1)% SPHERE_H_SEGMENT_COUNT + yIndex * SPHERE_H_SEGMENT_COUNT));
+			sphereIndexData.push_back(((xIndex + 1) % SPHERE_H_SEGMENT_COUNT + yIndex * SPHERE_H_SEGMENT_COUNT));
 			if (yIndex != SPHERE_V_SEGMENT_COUNT - 1) {
 				sphereIndexData.push_back(index);
 				sphereIndexData.push_back(index + SPHERE_H_SEGMENT_COUNT);
@@ -114,6 +120,41 @@ void DebugRenderer::init()
 	LOG_CALL(glVertexAttribPointer, 0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	sSphereIndexCount = sphereIndexData.size();
 	LOG_CALL(glBufferData, GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * sSphereIndexCount, &sphereIndexData[0], GL_STATIC_DRAW);
+
+	// Setup stuff for Cylinder Drawing
+	float cylinderVertexData[3 * 2 * CYLINDER_SEGMENT_COUNT];
+	unsigned short cylinderIndexData[3 * 2 * CYLINDER_SEGMENT_COUNT];
+	for (int i = 0; i < CYLINDER_SEGMENT_COUNT; i++) {
+		float angle = (2 * M_PI) / (float)(CYLINDER_SEGMENT_COUNT)*i;
+		float x = cos(angle);
+		float z = sin(angle);
+		cylinderVertexData[3 * 2 * i + 0] = x;
+		cylinderVertexData[3 * 2 * i + 1] = -1;
+		cylinderVertexData[3 * 2 * i + 2] = z;
+		cylinderVertexData[3 * 2 * i + 3] = x;
+		cylinderVertexData[3 * 2 * i + 4] = 1;
+		cylinderVertexData[3 * 2 * i + 5] = z;
+
+		cylinderIndexData[3 * 2 * i + 0] = 2 * i;
+		cylinderIndexData[3 * 2 * i + 1] = 2 * i + 1;
+		cylinderIndexData[3 * 2 * i + 2] = 2 * i;
+		cylinderIndexData[3 * 2 * i + 3] = 2 * ((i + 1) % CYLINDER_SEGMENT_COUNT);
+		cylinderIndexData[3 * 2 * i + 4] = 2 * i + 1;
+		cylinderIndexData[3 * 2 * i + 5] = 2 * ((i + 1) % CYLINDER_SEGMENT_COUNT) + 1;
+	}
+	GLuint cylinderVertexBufferId;
+	LOG_CALL(glGenBuffers, 1, &cylinderVertexBufferId);
+	LOG_CALL(glBindBuffer, GL_ARRAY_BUFFER, cylinderVertexBufferId);
+	LOG_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(cylinderVertexData), cylinderVertexData, GL_STATIC_DRAW);
+	LOG_CALL(glGenVertexArrays, 1, &sCylinderVaoId);
+	LOG_CALL(glBindVertexArray, sCylinderVaoId);
+	LOG_CALL(glVertexAttribPointer, 0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+	LOG_CALL(glBindBuffer, GL_ARRAY_BUFFER, 0);
+	LOG_CALL(glBindVertexArray, 0);
+	LOG_CALL(glGenBuffers, 1, &sCylinderIndexBufferId);
+	LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, sCylinderIndexBufferId);
+	LOG_CALL(glBufferData, GL_ELEMENT_ARRAY_BUFFER, sizeof(cylinderIndexData), cylinderIndexData, GL_STATIC_DRAW);
+	LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	sInit = false;
 }
@@ -201,6 +242,24 @@ void DebugRenderer::drawUnitSphere(const Vector& pos, const Matrix& transform) {
 
 void DebugRenderer::drawSphere(const Vector& pos, float radius, const Matrix& transform) {
 	DebugRenderer::drawUnitSphere(pos, transform * Matrix().scale(radius));
+}
+
+void DebugRenderer::drawCylinder(const Matrix& transform)
+{
+	if (sInit) {
+		DebugRenderer::init();
+	}
+	pShader->setModelViewProj(pCamera->getViewProj() * transform);
+	pShader->setColor(1, 0, 0);
+	pShader->activate();
+
+	// Draw
+	LOG_CALL(glBindVertexArray, sCylinderVaoId);
+	LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, sCylinderIndexBufferId);
+	LOG_CALL(glEnableVertexAttribArray, 0);
+	LOG_CALL(glDrawElements, GL_LINES, 3 * 2 * CYLINDER_SEGMENT_COUNT, GL_UNSIGNED_SHORT, 0);
+	LOG_CALL(glDisableVertexAttribArray, 0);
+	LOG_CALL(glBindVertexArray, 0);
 }
 
 void DebugRenderer::setCamera(Camera* pCamera) {

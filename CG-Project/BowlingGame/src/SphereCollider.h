@@ -3,9 +3,12 @@
 
 class SphereCollider : public Collider
 {
+	Matrix mRelativeTransform;
+	float mRadius;
 public:
 	SphereCollider();
 	virtual ~SphereCollider() override = default;
-	virtual void debugDraw() override;
+	void debugDraw(Camera * pCamera, const Matrix & transform) const override;
+	bool collidesWith(const Collider& pOther) const override;
 };
 

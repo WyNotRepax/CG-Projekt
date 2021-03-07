@@ -18,7 +18,7 @@ void Model::draw(const Camera* pCamera)const {
 	for (unsigned int meshIndex = 0; meshIndex < mMeshCount; meshIndex++) {
 		Mesh& currMesh = mMeshes[meshIndex];
 
-		LOG("TRANSFORM:\n %s\n", ((std::string)currMesh.transform).c_str());
+		//LOG("TRANSFORM:\n %s\n", ((std::string)currMesh.transform).c_str());
 
 		pShader->setModelViewProj(pCamera->getViewProj()* currMesh.transform);
 		pShader->setColor(0, 1, 0);
