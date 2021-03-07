@@ -116,7 +116,7 @@ int main() {
 	Matrix testOrientation = Matrix().identity();
 	Matrix testOrientationDelta = Matrix().roationAxis(M_PI * 2 / (8 * 60.0f),Vector(0,1,0).normalize());
 
-	Model model = Model(MODEL_DIR"/pin.dae");
+	Model model = Model(MODEL_DIR"/bahn.dae");
 
 	DebugRenderer::setCamera(pCamera);
 
