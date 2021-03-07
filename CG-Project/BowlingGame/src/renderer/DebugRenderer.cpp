@@ -146,6 +146,7 @@ void DebugRenderer::drawLine(const Vector& v1, const Vector& v2, const Matrix& t
 
 void DebugRenderer::drawAABB(const AABB& aabb, const Matrix& transform)
 {
+	glDepthFunc(GL_ALWAYS);
 	if (sInit) {
 		DebugRenderer::init();
 	}
@@ -177,6 +178,7 @@ void DebugRenderer::drawAABB(const AABB& aabb, const Matrix& transform)
 	LOG_CALL(glDisableVertexAttribArray, 0);
 	LOG_CALL(glBindVertexArray, 0);
 
+	glDepthFunc(GL_LESS);
 }
 void DebugRenderer::drawUnitSphere(const Vector& pos, const Matrix& transform) {
 	if (sInit) {
