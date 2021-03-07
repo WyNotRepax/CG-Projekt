@@ -22,11 +22,15 @@ private:
 	static GLuint sSphereVertexBufferId;
 	static GLuint sSphereIndexBufferId;
 	static GLuint sSphereVaoId;
-	static GLuint sSphereIndexCount;
+	static unsigned int sSphereIndexCount;
 
 	static Camera* pCamera;
 	static bool sDestroyCamera;
 	static ConstantShader* pShader;
+
+	static GLuint sCylinderVaoId;
+	static GLuint sCylinderIndexBufferId;
+	static unsigned int sCylinderIndexCount;
 
 	static void init();
 
@@ -36,5 +40,6 @@ public:
 	static void drawAABB(const AABB& aabb, const Matrix& transform = Matrix().identity());
 	static void drawUnitSphere(const Vector& pos, const Matrix& transform = Matrix().identity());
 	static void drawSphere(const Vector& pos, float radius, const Matrix& transform = Matrix().identity());
+	static void drawCylinder(const Matrix& transform = Matrix().identity());
 };
 
