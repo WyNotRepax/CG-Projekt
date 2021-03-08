@@ -101,15 +101,19 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\freeimage\include;$(SolutionDir)Dependencies\assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib;assimp-vc140-mt.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\;$(SolutionDir)Dependencies\GLEW\lib\Release\$(Platform)\;$(SolutionDir)Dependencies\assimp\lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib;assimp-vc140-mt.lib;FreeImage.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\;$(SolutionDir)Dependencies\GLEW\lib\Release\$(Platform)\;$(SolutionDir)Dependencies\assimp\lib\;$(SolutionDir)Dependencies\freeimage\lib\</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(SolutionDir)Dependencies\freeimage\lib\*.dll" "$(OutDir)"
+xcopy /y /d "$(SolutionDir)Dependencies\assimp\lib\*.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -119,16 +123,20 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\freeimage\include;$(SolutionDir)Dependencies\assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib;assimp-vc140-mt.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\assimp\lib\;$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\;$(SolutionDir)Dependencies\GLEW\lib\Release\$(Platform)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib;assimp-vc140-mt.lib;FreeImage.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\;$(SolutionDir)Dependencies\GLEW\lib\Release\$(Platform)\;$(SolutionDir)Dependencies\assimp\lib\;$(SolutionDir)Dependencies\freeimage\lib\</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(SolutionDir)Dependencies\freeimage\lib\*.dll" "$(OutDir)"
+xcopy /y /d "$(SolutionDir)Dependencies\assimp\lib\*.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -136,14 +144,18 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\freeimage\include;$(SolutionDir)Dependencies\assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib;assimp-vc140-mt.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\assimp\lib\;$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\;$(SolutionDir)Dependencies\GLEW\lib\Release\$(Platform)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib;assimp-vc140-mt.lib;FreeImage.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\;$(SolutionDir)Dependencies\GLEW\lib\Release\$(Platform)\;$(SolutionDir)Dependencies\assimp\lib\;$(SolutionDir)Dependencies\freeimage\lib\</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(SolutionDir)Dependencies\freeimage\lib\*.dll" "$(OutDir)"
+xcopy /y /d "$(SolutionDir)Dependencies\assimp\lib\*.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -153,18 +165,23 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\include;$(SolutionDir)Dependencies\GLEW\include;$(SolutionDir)Dependencies\freeimage\include;$(SolutionDir)Dependencies\assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib;assimp-vc140-mt.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\assimp\lib\;$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\;$(SolutionDir)Dependencies\GLEW\lib\Release\$(Platform)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;User32.lib;Gdi32.lib;Shell32.lib;glew32s.lib;assimp-vc140-mt.lib;FreeImage.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\GLFW\$(PlatformTarget)\;$(SolutionDir)Dependencies\GLEW\lib\Release\$(Platform)\;$(SolutionDir)Dependencies\assimp\lib\;$(SolutionDir)Dependencies\freeimage\lib\</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(SolutionDir)Dependencies\freeimage\lib\*.dll" "$(OutDir)"
+xcopy /y /d "$(SolutionDir)Dependencies\assimp\lib\*.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\collider\CylinderCollider.cpp" />
     <ClCompile Include="src\collider\Collider.cpp" />
     <ClCompile Include="src\shader\GameShader.cpp" />
     <ClCompile Include="src\collider\SphereCollider.cpp" />
@@ -173,7 +190,6 @@
     <ClCompile Include="src\math\AABB.cpp" />
     <ClCompile Include="src\renderer\Camera.cpp" />
     <ClCompile Include="src\math\Matrix.cpp" />
-    <ClCompile Include="src\renderer\GameRenderer.cpp" />
     <ClCompile Include="src\renderer\Model.cpp" />
     <ClCompile Include="src\shader\ConstantShader.cpp" />
     <ClCompile Include="src\shader\Shader.cpp" />
@@ -182,6 +198,7 @@
     <ClCompile Include="src\math\VectorMath.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\collider\CylinderCollider.h" />
     <ClInclude Include="src\shader\GameShader.h" />
     <ClInclude Include="src\collider\SphereCollider.h" />
     <ClInclude Include="src\collider\Collider.h" />
@@ -191,7 +208,6 @@
     <ClInclude Include="src\math\AABB.h" />
     <ClInclude Include="src\renderer\Camera.h" />
     <ClInclude Include="src\math\Matrix.h" />
-    <ClInclude Include="src\renderer\GameRenderer.h" />
     <ClInclude Include="src\renderer\Model.h" />
     <ClInclude Include="src\Directories.h" />
     <ClInclude Include="src\Logger.h" />
@@ -203,7 +219,9 @@
   <ItemGroup>
     <None Include="..\..\..\Hausarbeit_Computergrafik_Benno_Steinkamp\CLion\res\models\enemy_body.dae" />
     <None Include="res\shader\fsconstant.glsl" />
+    <None Include="res\shader\fsmodel.glsl" />
     <None Include="res\shader\vsconstant.glsl" />
+    <None Include="res\shader\vsmodel.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

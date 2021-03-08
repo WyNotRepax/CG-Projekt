@@ -5,7 +5,7 @@ ConstantShader* ConstantShader::pInstance = nullptr;
 
 ConstantShader::ConstantShader() :
 	Shader(CONSTANT_SHADER_VS_PATH, CONSTANT_SHADER_FS_PATH),
-	mR(0.0f), mG(0.0f), mB(0.0f), mColorChanged(true) {
+	mR(0.0f), mG(0.0f), mB(0.0f), mColorChanged(true), mModelViewProjChanged(true) {
 	mColorLoc = getUniformLocation(CONSTANT_SHADER_COLOR_UNIFORM_NAME);
 	mModelViewProjLoc = getUniformLocation(CONSTANT_SHADER_MODELVIEWPROJ_UNIFORM_NAME);
 }

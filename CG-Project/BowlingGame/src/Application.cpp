@@ -9,51 +9,15 @@
 #include <GLFW/glfw3.h>
 #include "shader/ConstantShader.h"
 #include "math/Vector.h"
-#include "renderer/GameRenderer.h"
 #include "renderer/DebugRenderer.h"
 #include "Logging.h"
-#include "SphereCollider.h"
+#include "collider/SphereCollider.h"
+#include "renderer/Model.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-GameRenderer* pGameRenderer;
 Camera* pCamera;
-
-static GLuint CompileShader(GLenum type, const std::string& source) {
-	GLuint id = glCreateShader(type);
-	const char* pSource = source.c_str();
-	glShaderSource(id, 1, &pSource, nullptr);
-	glCompileShader(id);
-
-	GLint result;
-	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
-	if (result == GL_FALSE) {
-		GLint length;
-		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-		char* message = new char[length];
-		glGetShaderInfoLog(id, length, &length, message);
-		delete[] message;
-		glDeleteShader(id);
-		return 0;
-	}
-
-	return id;
-}
-
-static GLuint CreateShader(const std::string& vertexShader, const std::string& fragmentShader) {
-	GLuint programID = glCreateProgram();
-	GLuint vsID = CompileShader(GL_VERTEX_SHADER, vertexShader);
-	GLuint fsID = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
-	glAttachShader(programID, vsID);
-	glAttachShader(programID, fsID);
-	glLinkProgram(programID);
-
-	glDeleteShader(vsID);
-	glDeleteShader(fsID);
-
-	return programID;
-}
 
 int main() {
 	std::cout << "WTF";
@@ -86,8 +50,7 @@ int main() {
 	std::cout << glGetString(GL_VERSION) << std::endl;
 #endif
 
-	pCamera = new Camera(Matrix().lookAt(Vector(0, 0, 0), Vector(0, 1, 0), Vector(5, 0, 0)), Matrix().perspective(70, 16.0f / 9.0f, 0.01, 20));
-	pGameRenderer = new GameRenderer(pCamera);
+	pCamera = new Camera(Matrix().lookAt(Vector(0, 0, 0), Vector(0, 1, 0), Vector(5, 2, 0)), Matrix().perspective(70, 16.0f / 9.0f, 0.01, 100));
 
 	float positions[6] = {
 		-0.5f, -0.5f,
@@ -96,31 +59,15 @@ int main() {
 	};
 
 
-	//GLuint bufferId;
-	//glGenBuffers(1, &bufferId);
-	//glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, positions, GL_STATIC_DRAW);
 
-	// Enable Attribute 0
-	//glEnableVertexAttribArray(0);
-	// Tell the GPU about your layout
-	// index -> index of the Attribute
-	// size -> number of components of the attribute
-	// type -> type of each component
-	// normalized -> sould the data be normalized
-	// stride -> size of the whole vertex element in the buffer
-	// pointer -> offset of the attribute within a vertex element (See "offsetof" macro?)
-	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
-	//ConstantShader* pConstantShader = ConstantShader::GetInstance();
-	//pConstantShader->setModelViewProj(Matrix().identity());
 	Matrix testOrientation = Matrix().identity();
-	Matrix testOrientationDelta = Matrix().roationAxis(M_PI * 2 / (8 * 60.0f),Vector(0,1,0).normalize());
+	Matrix testOrientationDelta = Matrix().roationAxis(M_PI * 2 / (8 * 60.0f), Vector(0, 1, 0).normalize());
 
-	Model model = Model(MODEL_DIR"/pin.dae");
-	SphereCollider sphereCollider =  SphereCollider();
+	Model model = Model(MODEL_DIR"/bahn.dae");
+	SphereCollider sphereCollider = SphereCollider();
 
-	Matrix cylinderTransform = Matrix().scale(0.5,1.5,0.5);
+	Matrix cylinderTransform = Matrix().scale(0.5, 1.5, 0.5);
 
 	DebugRenderer::setCamera(pCamera);
 
@@ -131,13 +78,12 @@ int main() {
 	LOG("After\n");
 	// Main Application loop
 	int frameN = 0;
-	glEnable(GL_DEPTH_TEST);
+	LOG_CALL(glEnable, GL_DEPTH_TEST);
 	while (!glfwWindowShouldClose(window)) {
-		//pCamera->setView(pCamera->getView() * Matrix().rotationY(0.01f));
-		//pConstantShader->setColor(n, 0.0f, 0.0f);
+		pCamera->setView(pCamera->getView() * Matrix().rotationY(0.01f));
 		if (frameN < 120 || true)
 		{
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			LOG_CALL(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 
 		//pConstantShader->activate();
@@ -147,7 +93,6 @@ int main() {
 		//DebugRenderer::drawLine(Vector(0, 0, 0), Vector(0, 1, 0),testOrientation);
 		//DebugRenderer::drawSphere(Vector(0,0,0),0.5f);
 		model.draw(pCamera);
-		//sphereCollider.debugDraw2(pCamera);
 		DebugRenderer::drawCylinder(cylinderTransform);
 		glfwSwapBuffers(window);
 
@@ -156,9 +101,6 @@ int main() {
 		if (Error != GL_NO_ERROR) {
 			fprintf(stderr, "Error Code: %x\n", Error);
 			//exit(1);
-		}
-		if (frameN == 60) {
-			//testOrientationDelta *= Matrix().rotationZ(M_PI * 2 / (-2 * 60.0f));
 		}
 		frameN++;
 	}

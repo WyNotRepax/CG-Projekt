@@ -1,5 +1,5 @@
 #pragma once
-#include "../shader/Shader.h"
+#include "../shader/GameShader.h"
 #include "Camera.h"
 #include <assimp/scene.h>
 
@@ -8,7 +8,7 @@ class Model
 public:
 
 private:
-	Shader* pShader;
+	GameShader* pShader;
 	Matrix m_transform;
 
 	struct Mesh {

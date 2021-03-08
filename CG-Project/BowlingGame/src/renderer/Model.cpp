@@ -6,31 +6,31 @@
 #include <assimp/mesh.h>
 
 Model::Model(const std::string& path) {
-	pShader = ConstantShader::GetInstance();
+	pShader = GameShader::GetInstance();
 	bool loaded = load(path);
 	assert(loaded);
 }
 
 void Model::draw(const Camera* pCamera)const {
 	//TODO use correct shader;
-	ConstantShader* pShader = dynamic_cast<ConstantShader*>(this->pShader);  // <- REMOVE THIS 
 	assert(pShader != nullptr);
 	for (unsigned int meshIndex = 0; meshIndex < mMeshCount; meshIndex++) {
 		Mesh& currMesh = mMeshes[meshIndex];
 
 		//LOG("TRANSFORM:\n %s\n", ((std::string)currMesh.transform).c_str());
 
-		pShader->setModelViewProj(pCamera->getViewProj()* currMesh.transform);
-		pShader->setColor(0, 1, 0);
+		pShader->setModelViewProj(pCamera->getViewProj() * currMesh.transform);
 		pShader->activate();
 
 		LOG_CALL(glBindVertexArray, currMesh.vaoId);
 		LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, currMesh.indexBufferId);
 		LOG_CALL(glEnableVertexAttribArray, 0);
 		LOG_CALL(glEnableVertexAttribArray, 1);
+		LOG_CALL(glEnableVertexAttribArray, 2);
 		LOG_CALL(glDrawElements, GL_TRIANGLES, currMesh.indexCount, GL_UNSIGNED_INT, 0);
 		LOG_CALL(glDisableVertexAttribArray, 0);
 		LOG_CALL(glDisableVertexAttribArray, 1);
+		LOG_CALL(glDisableVertexAttribArray, 2);
 		LOG_CALL(glBindVertexArray, 0);
 
 	}
@@ -68,12 +68,15 @@ bool Model::loadMeshes(const aiScene* pScene)
 		float* vertexNormalData = new float[3 * pCurrAIMesh->mNumVertices];
 		float* vertexTextureData = new float[2 * pCurrAIMesh->mNumVertices];
 		for (unsigned int vertexIndex = 0; vertexIndex < pCurrAIMesh->mNumVertices; vertexIndex++) {
+			// Load Vertex Position Data
 			vertexData[3 * vertexIndex + 0] = pCurrAIMesh->mVertices[vertexIndex].x;
 			vertexData[3 * vertexIndex + 1] = pCurrAIMesh->mVertices[vertexIndex].y;
 			vertexData[3 * vertexIndex + 2] = pCurrAIMesh->mVertices[vertexIndex].z;
+			// Load Vertex Normal Data
 			vertexNormalData[3 * vertexIndex + 0] = pCurrAIMesh->mNormals[vertexIndex].x;
 			vertexNormalData[3 * vertexIndex + 1] = pCurrAIMesh->mNormals[vertexIndex].y;
 			vertexNormalData[3 * vertexIndex + 2] = pCurrAIMesh->mNormals[vertexIndex].z;
+			// Load Texture Coordinates
 			vertexTextureData[2 * vertexIndex + 0] = pCurrAIMesh->mTextureCoords[0][vertexIndex].x;
 			vertexTextureData[2 * vertexIndex + 1] = pCurrAIMesh->mTextureCoords[0][vertexIndex].y;
 			//LOG("NORMAL %d: %f,%f,%f\n", vertexIndex, pCurrAIMesh->mNormals[vertexIndex].x, pCurrAIMesh->mNormals[vertexIndex].y, pCurrAIMesh->mNormals[vertexIndex].z);
@@ -93,6 +96,12 @@ bool Model::loadMeshes(const aiScene* pScene)
 		LOG_CALL(glBindBuffer, GL_ARRAY_BUFFER, vertexNormalBufferId);
 		LOG_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(float) * 3 * pCurrAIMesh->mNumVertices, vertexNormalData, GL_STATIC_DRAW);
 		LOG_CALL(glVertexAttribPointer, 1, 3, GL_FLOAT, false, sizeof(float) * 3, 0);
+
+		GLuint vertexTextureCoordId;
+		LOG_CALL(glGenBuffers, 1, &vertexTextureCoordId);
+		LOG_CALL(glBindBuffer, GL_ARRAY_BUFFER, vertexTextureCoordId);
+		LOG_CALL(glBufferData, GL_ARRAY_BUFFER, sizeof(float) * 2 * pCurrAIMesh->mNumVertices, vertexTextureData, GL_STATIC_DRAW);
+		LOG_CALL(glVertexAttribPointer, 2, 2, GL_FLOAT, false, sizeof(float) * 2, 0);
 
 		LOG_CALL(glBindVertexArray, 0);
 		// There might be a driver bug that is triggered by that line so don't i guess? 

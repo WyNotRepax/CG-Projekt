@@ -96,7 +96,7 @@ void Shader::activate()
 	if (sCurrentShader == mId) {
 		return;
 	}
-	glUseProgram(mId);
+	LOG_CALL(glUseProgram,mId);
 }
 
 GLint Shader::getUniformLocation(const std::string& uniformName)

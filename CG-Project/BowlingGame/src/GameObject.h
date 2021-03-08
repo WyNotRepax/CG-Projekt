@@ -2,7 +2,7 @@
 
 #include "math/Matrix.h"
 #include "renderer/Model.h"
-#include "Collider.h"
+#include "collider/Collider.h"
 
 class GameObject
 {
