@@ -2,10 +2,17 @@
 
 uniform vec3 Color;
 
-in vec4 colorTest;
+in vec2 texCoord;
+
 out vec4 FragColor;
 
+uniform vec3 DiffuseColor;
+uniform vec3 SpecularColor;
+uniform vec3 AmbientColor;
+uniform float SpecularExp;
+uniform sampler2D DiffTex;
+uniform vec3 EyePos;
+
 void main(){
-	FragColor = vec4(Color,1.0);
-	FragColor = abs(colorTest);
+	FragColor = texture(DiffTex,texCoord);
 }

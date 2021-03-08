@@ -7,20 +7,21 @@ GLuint Shader::sCurrentShader = 0;
 
 // Static helper functions
 static GLuint CompileShader(GLenum type, const std::string& source) {
-	GLuint id = glCreateShader(type);
+	GLuint id;
+	LOG_CALL(id = glCreateShader, type);
 	const char* pSource = source.c_str();
-	glShaderSource(id, 1, &pSource, nullptr);
-	glCompileShader(id);
+	LOG_CALL(glShaderSource, id, 1, &pSource, nullptr);
+	LOG_CALL(glCompileShader, id);
 
 	GLint result;
-	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+	LOG_CALL(glGetShaderiv, id, GL_COMPILE_STATUS, &result);
 	if (result == GL_FALSE) {
 		GLint length;
-		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+		LOG_CALL(glGetShaderiv, id, GL_INFO_LOG_LENGTH, &length);
 		char* message = new char[length];
-		glGetShaderInfoLog(id, length, &length, message);
+		LOG_CALL(glGetShaderInfoLog, id, length, &length, message);
 		delete[] message;
-		glDeleteShader(id);
+		LOG_CALL(glDeleteShader, id);
 		return 0;
 	}
 
@@ -28,15 +29,16 @@ static GLuint CompileShader(GLenum type, const std::string& source) {
 }
 
 static GLuint CreateShaderProgram(const std::string& vertexShaderSource, const std::string& fragmentShaderSource) {
-	GLuint programID = glCreateProgram();
+	GLuint programID;
+	LOG_CALL(programID = glCreateProgram);
 	GLuint temporaryVertexShaderID = CompileShader(GL_VERTEX_SHADER, vertexShaderSource);
 	GLuint temporaryFragmentShaderID = CompileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-	glAttachShader(programID, temporaryVertexShaderID);
-	glAttachShader(programID, temporaryFragmentShaderID);
-	glLinkProgram(programID);
+	LOG_CALL(glAttachShader, programID, temporaryVertexShaderID);
+	LOG_CALL(glAttachShader, programID, temporaryFragmentShaderID);
+	LOG_CALL(glLinkProgram, programID);
 
-	glDeleteShader(temporaryVertexShaderID);
-	glDeleteShader(temporaryFragmentShaderID);
+	LOG_CALL(glDeleteShader, temporaryVertexShaderID);
+	LOG_CALL(glDeleteShader, temporaryFragmentShaderID);
 
 	return programID;
 }
@@ -87,7 +89,7 @@ bool Shader::load(const std::string& vspath, const std::string& fspath)
 
 Shader::~Shader()
 {
-	glDeleteProgram(mId);
+	LOG_CALL(glDeleteProgram, mId);
 	mId = 0;
 }
 
@@ -101,7 +103,8 @@ void Shader::activate()
 
 GLint Shader::getUniformLocation(const std::string& uniformName)
 {
-	GLint loc = glGetUniformLocation(mId, uniformName.c_str());
+	GLint loc;
+	LOG_CALL(loc = glGetUniformLocation, mId, uniformName.c_str());
 	LOG("Program ID: %d uniformName: %s, location: %d\n", mId, uniformName.c_str(), loc);
 	//assert(loc != -1);
 	return loc;
@@ -109,7 +112,7 @@ GLint Shader::getUniformLocation(const std::string& uniformName)
 
 void Shader::setUniformVec(GLint location, const float& x, const float& y, const float& z)
 {
-	glUniform3f(location, x, y, z);
+	LOG_CALL(glUniform3f, location, x, y, z);
 }
 
 void Shader::setUniformVec(GLint location, const Vector& v)
@@ -119,12 +122,17 @@ void Shader::setUniformVec(GLint location, const Vector& v)
 
 void Shader::setUniformMatrix(GLint location, const float* m)
 {
-	glUniformMatrix4fv(location, 1, false, m);
+	LOG_CALL(glUniformMatrix4fv, location, 1, false, m);
 }
 
 void Shader::setUniformMatrix(GLint location, const Matrix& m)
 {
 	Shader::setUniformMatrix(location, m.m);
+}
+
+void Shader::setUniformId(GLint location, const GLuint& id)
+{
+	LOG_CALL(glUniform1i, location, id);
 }
 
 

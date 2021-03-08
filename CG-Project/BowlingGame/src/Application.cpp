@@ -20,7 +20,6 @@
 Camera* pCamera;
 
 int main() {
-	std::cout << "WTF";
 	// Initialize GLFW
 	if (!glfwInit()) {
 		return EXIT_FAILURE;
@@ -65,6 +64,8 @@ int main() {
 	Matrix testOrientationDelta = Matrix().roationAxis(M_PI * 2 / (8 * 60.0f), Vector(0, 1, 0).normalize());
 
 	Model model = Model(MODEL_DIR"/bahn.dae");
+	model.mTransform = Matrix().translation(0, 0, -14);
+	
 	SphereCollider sphereCollider = SphereCollider();
 
 	Matrix cylinderTransform = Matrix().scale(0.5, 1.5, 0.5);

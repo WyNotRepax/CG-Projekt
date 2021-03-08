@@ -16,6 +16,8 @@ protected:
 	static void setUniformMatrix(GLint location, const float* m);
 	static void setUniformMatrix(GLint location, const Matrix& matrix);
 
+	static void setUniformId(GLint location, const GLuint& id);
+
 	//Member
 protected:
 	GLuint mId;
