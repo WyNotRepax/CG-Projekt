@@ -74,6 +74,11 @@ Matrix& Matrix::translation(const Vector& v)
 	return this->translation(v.X, v.Y, v.Z);
 }
 
+Vector Matrix::translation() const
+{
+	return Vector(m03,m13,m23);
+}
+
 Matrix& Matrix::rotationX(float angle)
 {
 	float c = (float)cos(angle);

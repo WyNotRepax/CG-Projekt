@@ -6,7 +6,7 @@
 
 #define LOG(format,...)(fprintf(stderr,"%s:%d: " format,__FILE__,__LINE__,__VA_ARGS__))
 
-#define LOG_CALL(f,...) { f(__VA_ARGS__);GLenum Error = glGetError(); if(Error != GL_NO_ERROR){LOG("GL_ERROR:0x%x",Error); }}
+#define LOG_CALL(f,...) { f(__VA_ARGS__);GLenum Error = glGetError(); if(Error != GL_NO_ERROR){LOG("GL_ERROR:0x%x\n",Error); }}
 
 #else
 

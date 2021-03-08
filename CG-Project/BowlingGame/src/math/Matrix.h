@@ -33,6 +33,7 @@ public:
 
 	Matrix& translation(float x, float y, float z);
 	Matrix& translation(const Vector& v);
+	Vector translation()const;
 
 	Matrix& rotationX(float angle);
 	Matrix& rotationY(float angle);

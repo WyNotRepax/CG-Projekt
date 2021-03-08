@@ -1,6 +1,16 @@
 #pragma once
 #include "Shader.h"
 #include "../Directories.h"
+#include "Light.h"
+
+#define GAME_SHADER_MAX_LIGHTS 32
+#define GAME_SHADER_LIGHTS_UNIFORM_NAME "Lights"
+#define GAME_SHADER_LIGHTS_TYPE_UNIFORM_NAME "Type"
+#define GAME_SHADER_LIGHTS_COLOR_UNIFORM_NAME "Color"
+#define GAME_SHADER_LIGHTS_POSITION_UNIFORM_NAME "Position"
+#define GAME_SHADER_LIGHTS_DIRECTION_UNIFORM_NAME "Direction"
+#define GAME_SHADER_LIGHTS_ATTENUATION_UNIFORM_NAME "Attenuation"
+#define GAME_SHADER_LIGHTS_SPOTRADIUS_UNIFORM_NAME "SpotRadius"
 
 #define GAME_SHADER_MODELVIEWPROJ_UNIFORM_NAME "ModelViewProj"
 #define GAME_SHADER_DIFFTEX_UNIFORM_NAME "DiffTex"
@@ -8,6 +18,7 @@
 #define GAME_SHADER_EYEPOS_UNIFORM_NAME "EyePos"
 #define GAME_SHADER_DIFFCOL_UNIFORM_NAME "DiffuseColor"
 #define GAME_SHADER_SPECCOL_UNIFORM_NAME "SpecularColor"
+#define GAME_SHADER_SPECEXP_UNIFORM_NAME "SpecularExp"
 #define GAME_SHADER_AMBCOL_UNIFORM_NAME "AmbientColor"
 #define GAME_SHADER_FS_PATH SHADER_DIR"/fsmodel.glsl"
 #define GAME_SHADER_VS_PATH SHADER_DIR"/vsmodel.glsl"
@@ -47,6 +58,25 @@ private:
 	GLint mAmbColLoc;
 	bool mAmbColChanged;
 
+	float mSpecExp = 1;
+	GLint mSpecExpLoc = 0;
+	bool mSpecExpChanged = true;
+
+	struct LightLoc {
+		GLint typeLoc;
+		GLint colorLoc;
+		GLint positionLoc;
+		GLint directionLoc;
+		GLint attenuationLoc;
+		GLint spotRadiusLoc;
+	};
+
+	Light mLights[GAME_SHADER_MAX_LIGHTS];
+	struct LightLoc mLightLocs[GAME_SHADER_MAX_LIGHTS];
+	unsigned int mLightCount = 0;
+	bool mLightsChanged = true;
+
+
 	//Member Funcions
 public:
 	GameShader(const GameShader& other) = delete;
@@ -60,7 +90,9 @@ public:
 	void setEyePos(const Vector& eyePos);
 	void setDiffCol(const Vector& diffCol);
 	void setSpecCol(const Vector& specCol);
+	void setSpecExp(const float& f);
 	void setAmbCol(const Vector& ambCol);
+	void addLight(const Light& light);
 protected:
 	GameShader();
 };

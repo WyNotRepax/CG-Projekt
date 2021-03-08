@@ -72,7 +72,10 @@ int main() {
 
 	DebugRenderer::setCamera(pCamera);
 
+	Light light;
+	light.Position = Vector(0, 5, 0);
 
+	GameShader::GetInstance()->addLight(light);
 
 	AABB aabb(Vector(-1, -1, -1), Vector(1, 1, 1));
 	float n = 0;
@@ -94,7 +97,8 @@ int main() {
 		//DebugRenderer::drawLine(Vector(0, 0, 0), Vector(0, 1, 0),testOrientation);
 		//DebugRenderer::drawSphere(Vector(0,0,0),0.5f);
 		model.draw(pCamera);
-		DebugRenderer::drawCylinder(cylinderTransform);
+		//DebugRenderer::drawCylinder(cylinderTransform);
+		DebugRenderer::drawLine(Vector(0, 0, 0), Vector(0, 5, 0));
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();

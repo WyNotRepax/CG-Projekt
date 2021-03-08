@@ -20,6 +20,7 @@ static GLuint CompileShader(GLenum type, const std::string& source) {
 		LOG_CALL(glGetShaderiv, id, GL_INFO_LOG_LENGTH, &length);
 		char* message = new char[length];
 		LOG_CALL(glGetShaderInfoLog, id, length, &length, message);
+		LOG("Shader Compilation Failed: %s\n", message);
 		delete[] message;
 		LOG_CALL(glDeleteShader, id);
 		return 0;
@@ -47,13 +48,13 @@ static std::string LoadSource(const std::string& path) {
 	std::ifstream input(path);
 	std::string source;
 	if (!input) {
-		fprintf(stderr,"Could not open file %s\n", path.c_str());
+		fprintf(stderr, "Could not open file %s\n", path.c_str());
 		return std::string();
 	}
 	input.seekg(0, std::ios::end);
 	source.resize(input.tellg());
 	input.seekg(0);
-	input.read((char *)source.data(), source.size());
+	input.read((char*)source.data(), source.size());
 	return source;
 }
 
@@ -98,7 +99,7 @@ void Shader::activate()
 	if (sCurrentShader == mId) {
 		return;
 	}
-	LOG_CALL(glUseProgram,mId);
+	LOG_CALL(glUseProgram, mId);
 }
 
 GLint Shader::getUniformLocation(const std::string& uniformName)
@@ -117,7 +118,7 @@ void Shader::setUniformVec(GLint location, const float& x, const float& y, const
 
 void Shader::setUniformVec(GLint location, const Vector& v)
 {
-	Shader::setUniformVec(location, v.X,v.Y,v.Z);
+	Shader::setUniformVec(location, v.X, v.Y, v.Z);
 }
 
 void Shader::setUniformMatrix(GLint location, const float* m)
@@ -130,9 +131,12 @@ void Shader::setUniformMatrix(GLint location, const Matrix& m)
 	Shader::setUniformMatrix(location, m.m);
 }
 
-void Shader::setUniformId(GLint location, const GLuint& id)
+void Shader::setUniformInt(GLint location, const GLuint& i)
 {
-	LOG_CALL(glUniform1i, location, id);
+	LOG_CALL(glUniform1i, location, i);
 }
 
 
+void Shader::setUniformFloat(GLint location, const float& f) {
+	LOG_CALL(glUniform1f, location, f);
+}

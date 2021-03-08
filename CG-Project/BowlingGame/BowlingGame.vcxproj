@@ -181,6 +181,7 @@ xcopy /y /d "$(SolutionDir)Dependencies\assimp\lib\*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\shader\Light.cpp" />
     <ClCompile Include="src\collider\CylinderCollider.cpp" />
     <ClCompile Include="src\collider\Collider.cpp" />
     <ClCompile Include="src\shader\GameShader.cpp" />
@@ -198,6 +199,7 @@ xcopy /y /d "$(SolutionDir)Dependencies\assimp\lib\*.dll" "$(OutDir)"</Command>
     <ClCompile Include="src\math\VectorMath.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\shader\Light.h" />
     <ClInclude Include="src\collider\CylinderCollider.h" />
     <ClInclude Include="src\shader\GameShader.h" />
     <ClInclude Include="src\collider\SphereCollider.h" />

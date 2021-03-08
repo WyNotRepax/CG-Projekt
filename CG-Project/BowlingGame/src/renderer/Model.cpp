@@ -7,7 +7,7 @@
 #include <assimp/material.h>
 #include <FreeImage.h>
 
-Model::Model(const std::string& path) :mMaterials(nullptr), mMeshes(nullptr),mTransform(Matrix().identity()) {
+Model::Model(const std::string& path) :mMaterials(nullptr), mMeshes(nullptr), mTransform(Matrix().identity()) {
 	pShader = GameShader::GetInstance();
 	bool loaded = load(path);
 	assert(loaded);
@@ -29,7 +29,13 @@ void Model::draw(const Camera* pCamera)const {
 
 		//LOG("TRANSFORM:\n %s\n", ((std::string)currMesh.transform).c_str());
 		pShader->setDiffTex(mMaterials[currMesh.materialIndex].texId);
+		pShader->setAmbCol(mMaterials[currMesh.materialIndex].ambientColor);
+		pShader->setDiffCol(mMaterials[currMesh.materialIndex].diffuseColor);
+		pShader->setSpecCol(mMaterials[currMesh.materialIndex].specularColor);
 		pShader->setViewProj(pCamera->getViewProj());
+		Matrix invView = pCamera->getView();
+		invView.invert();
+		pShader->setEyePos(invView.translation());
 		pShader->setModel(mTransform * currMesh.transform);
 		pShader->activate();
 
@@ -176,12 +182,15 @@ bool Model::loadMaterial(const aiScene* pScene, unsigned int materialIndex, cons
 	aiColor3D c;
 	pAiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, c);
 	pMaterial->diffuseColor = Vector(c.r, c.g, c.b);
-	pAiMaterial->Get(AI_MATKEY_COLOR_SPECULAR,c);
+	pAiMaterial->Get(AI_MATKEY_COLOR_SPECULAR, c);
 	pMaterial->specularColor = Vector(c.r, c.g, c.b);
 	pAiMaterial->Get(AI_MATKEY_COLOR_AMBIENT, c);
 	pMaterial->ambientColor = Vector(c.r, c.g, c.b);
 	pAiMaterial->Get(AI_MATKEY_SHININESS, pMaterial->specularExp);
-
+	LOG("diffuseColor=(%f,%f,%f),specularColor=(%f,%f,%f),ambientColor=(%f,%f,%f)\n",
+		pMaterial->diffuseColor.X, pMaterial->diffuseColor.Y, pMaterial->diffuseColor.Z,
+		pMaterial->specularColor.X, pMaterial->specularColor.Y, pMaterial->specularColor.Z,
+		pMaterial->ambientColor.X, pMaterial->ambientColor.Y, pMaterial->ambientColor.Z);
 
 	//Load Texture
 	aiString fileName;
