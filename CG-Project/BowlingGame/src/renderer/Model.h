@@ -34,7 +34,7 @@ private:
 public:
 	Model(const std::string& path);
 	~Model();
-	void draw(const Camera* camera)const;
+	void draw(const Camera* camera,const Matrix& parentTransform)const;
 
 private:
 	bool load(std::string path);

@@ -106,7 +106,7 @@ GLint Shader::getUniformLocation(const std::string& uniformName)
 {
 	GLint loc;
 	LOG_CALL(loc = glGetUniformLocation, mId, uniformName.c_str());
-	LOG("Program ID: %d uniformName: %s, location: %d\n", mId, uniformName.c_str(), loc);
+	//LOG("Program ID: %d uniformName: %s, location: %d\n", mId, uniformName.c_str(), loc);
 	//assert(loc != -1);
 	return loc;
 }

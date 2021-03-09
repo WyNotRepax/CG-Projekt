@@ -48,13 +48,14 @@ void GameShader::activate()
 	mAmbColChanged = false;
 
 	if (mLightsChanged) {
+		setUniformInt(mLightCountLoc, mLightCount);
 			for (unsigned int lightIndex = 0; lightIndex < mLightCount; lightIndex++) {
-				setUniformInt(mLightLocs->typeLoc, mLights->Type);
-				setUniformVec(mLightLocs->colorLoc, mLights->Color);
-				setUniformVec(mLightLocs->positionLoc, mLights->Position);
-				setUniformVec(mLightLocs->directionLoc, mLights->Direction);
-				setUniformVec(mLightLocs->attenuationLoc, mLights->Attenuation);
-				setUniformVec(mLightLocs->spotRadiusLoc, mLights->SpotRadius);
+				setUniformInt(mLightLocs[lightIndex].typeLoc, mLights[lightIndex].Type);
+				setUniformVec(mLightLocs[lightIndex].colorLoc, mLights[lightIndex].Color);
+				setUniformVec(mLightLocs[lightIndex].positionLoc, mLights[lightIndex].Position);
+				setUniformVec(mLightLocs[lightIndex].directionLoc, mLights[lightIndex].Direction);
+				setUniformVec(mLightLocs[lightIndex].attenuationLoc, mLights[lightIndex].Attenuation);
+				setUniformVec(mLightLocs[lightIndex].spotRadiusLoc, mLights[lightIndex].SpotRadius);
 			}
 	}
 	mLightsChanged = false;
@@ -155,4 +156,5 @@ GameShader::GameShader() :
 		mLightLocs[i].positionLoc = Shader::getUniformLocation(prefix + GAME_SHADER_LIGHTS_POSITION_UNIFORM_NAME);
 		mLightLocs[i].directionLoc = Shader::getUniformLocation(prefix + GAME_SHADER_LIGHTS_DIRECTION_UNIFORM_NAME);
 	}
+	mLightCountLoc = Shader::getUniformLocation(GAME_SHADER_LIGHTCOUNT_UNIFORM_NAME);
 }

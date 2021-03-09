@@ -21,9 +21,7 @@ Model::~Model()
 	mMaterialCount = 0;
 }
 
-void Model::draw(const Camera* pCamera)const {
-	//TODO use correct shader;
-	assert(pShader != nullptr);
+void Model::draw(const Camera* pCamera, const Matrix& parentTransform)const {
 	for (unsigned int meshIndex = 0; meshIndex < mMeshCount; meshIndex++) {
 		Mesh& currMesh = mMeshes[meshIndex];
 
@@ -36,7 +34,7 @@ void Model::draw(const Camera* pCamera)const {
 		Matrix invView = pCamera->getView();
 		invView.invert();
 		pShader->setEyePos(invView.translation());
-		pShader->setModel(mTransform * currMesh.transform);
+		pShader->setModel(parentTransform * mTransform * currMesh.transform);
 		pShader->activate();
 
 
@@ -195,31 +193,48 @@ bool Model::loadMaterial(const aiScene* pScene, unsigned int materialIndex, cons
 	//Load Texture
 	aiString fileName;
 	pAiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &fileName);
-	std::string fullPath = path + std::string(fileName.C_Str());
-	FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(fullPath.c_str());
-	FIBITMAP* pBitMap = FreeImage_Load(imageFormat, fullPath.c_str());
-	if (pBitMap == nullptr) {
-		LOG("Could not open %s\n", fullPath.c_str());
-		pMaterial->texId = 0;
-		return false;
-	}
-	unsigned int width = FreeImage_GetWidth(pBitMap);
-	unsigned int height = FreeImage_GetHeight(pBitMap);
-	unsigned int bpp = FreeImage_GetBPP(pBitMap);
+	unsigned int width;
+	unsigned int height;
+	unsigned char* data;
+	if (fileName.length > 0) {
 
-	unsigned char* data = new unsigned char[width * height * 4];
-	for (unsigned int y = 0; y < height; y++) {
-		for (unsigned int x = 0; x < width; x++) {
-			RGBQUAD c;
-			FreeImage_GetPixelColor(pBitMap, x, y, &c);
-			unsigned int index = 4 * (y * width + x);
-			data[index + 0] = c.rgbRed;
-			data[index + 1] = c.rgbGreen;
-			data[index + 2] = c.rgbBlue;
-			data[index + 3] = (bpp == 32) ? c.rgbReserved : 255;
+		std::string fullPath = path + std::string(fileName.C_Str());
+		FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(fullPath.c_str());
+		FIBITMAP* pBitMap = FreeImage_Load(imageFormat, fullPath.c_str());
+		if (pBitMap == nullptr) {
+			LOG("Could not open %s\n", fullPath.c_str());
+			pMaterial->texId = 0;
+			return false;
 		}
+		width = FreeImage_GetWidth(pBitMap);
+		height = FreeImage_GetHeight(pBitMap);
+		unsigned int bpp = FreeImage_GetBPP(pBitMap);
+
+		data = new unsigned char[width * height * 4];
+		for (unsigned int y = 0; y < height; y++) {
+			for (unsigned int x = 0; x < width; x++) {
+				RGBQUAD c;
+				FreeImage_GetPixelColor(pBitMap, x, y, &c);
+				unsigned int index = 4 * (y * width + x);
+				data[index + 0] = c.rgbRed;
+				data[index + 1] = c.rgbGreen;
+				data[index + 2] = c.rgbBlue;
+				data[index + 3] = (bpp == 32) ? c.rgbReserved : 255;
+			}
+		}
+		FreeImage_Unload(pBitMap);
 	}
-	FreeImage_Unload(pBitMap);
+	else {
+		width = 1;
+		height = 1;
+		data = new unsigned char[4];
+		data[0] = 255;
+		data[1] = 255;
+		data[2] = 255;
+		data[3] = 255;
+	}
+
+
 
 	LOG("Width: %d, Height: %d\n", width, height);
 	LOG_CALL(glGenTextures, 1, &pMaterial->texId);

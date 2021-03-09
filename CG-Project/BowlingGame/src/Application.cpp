@@ -7,33 +7,68 @@
 
 // GLFW is the window creation library
 #include <GLFW/glfw3.h>
-#include "shader/ConstantShader.h"
-#include "math/Vector.h"
-#include "renderer/DebugRenderer.h"
+
+#include"renderer/Camera.h"
 #include "Logging.h"
-#include "collider/SphereCollider.h"
-#include "renderer/Model.h"
+#include "renderer/DebugRenderer.h"
+#include "game/GameObject.h"
+#include "game/BowlingBall.h"
+#include "game/Pin.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-Camera* pCamera;
+Camera* pCamera = nullptr;
+GLFWwindow* pWindow = nullptr;
+
+std::vector<GameObject*> gameObjects;
+
+void Draw();
+void Update(float dt);
+void Setup();
+void SetupGL();
+void CheckErrors();
 
 int main() {
+
+
+
+	SetupGL();
+	Setup();
+	// Main Application loop
+	
+	float lastTime = 0;
+	while (!glfwWindowShouldClose(pWindow)) {
+		glfwPollEvents();
+
+		float currentTime = glfwGetTime();
+		Update(currentTime - lastTime);
+		lastTime = currentTime;
+
+		Draw();
+
+		glfwSwapBuffers(pWindow);
+		CheckErrors();
+	}
+	glfwTerminate();
+	return EXIT_SUCCESS;
+}
+
+void SetupGL() {
 	// Initialize GLFW
 	if (!glfwInit()) {
-		return EXIT_FAILURE;
+		exit(EXIT_FAILURE);
 	}
 
 	// Create GLFW window
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "Bowling Spiel", NULL, NULL);
-	if (!window) {
+	pWindow = glfwCreateWindow(1280, 720, "Bowling Spiel", NULL, NULL);
+	if (!pWindow) {
 		glfwTerminate();
-		return EXIT_FAILURE;
+		exit(EXIT_FAILURE);
 	}
 
 	// Create OpenGL Rendering Context and make that Context the current one
-	glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(pWindow);
 
 
 	// Initialize GLEW
@@ -41,74 +76,54 @@ int main() {
 	// -> after glfwMakeContextCurrent(...)
 	if (glewInit() != GLEW_OK) {
 		glfwTerminate();
-		return EXIT_FAILURE;
+		exit(EXIT_FAILURE);
 	}
 
-#ifdef _DEBUG
-	// Print Current OpenGL Version
-	std::cout << glGetString(GL_VERSION) << std::endl;
-#endif
+	// Enable Depth testing
+	LOG_CALL(glEnable, GL_DEPTH_TEST);
+}
 
+void Draw() {
+	LOG_CALL(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	for (auto it = gameObjects.begin(); it != gameObjects.end(); it++) {
+		(*it)->draw(pCamera);
+	}
+}
+
+void Update(float dt) {
+	for (auto it = gameObjects.begin(); it != gameObjects.end(); it++) {
+		(*it)->update(dt);
+	}
+}
+
+void Setup() {
 	pCamera = new Camera(Matrix().lookAt(Vector(0, 0, 0), Vector(0, 1, 0), Vector(5, 2, 0)), Matrix().perspective(70, 16.0f / 9.0f, 0.01, 100));
-
-	float positions[6] = {
-		-0.5f, -0.5f,
-		 0.0f,  0.5f,
-		 0.5f, -0.5f
-	};
-
-
-
-
-	Matrix testOrientation = Matrix().identity();
-	Matrix testOrientationDelta = Matrix().roationAxis(M_PI * 2 / (8 * 60.0f), Vector(0, 1, 0).normalize());
-
-	Model model = Model(MODEL_DIR"/bahn.dae");
-	model.mTransform = Matrix().translation(0, 0, -14);
-	
-	SphereCollider sphereCollider = SphereCollider();
-
-	Matrix cylinderTransform = Matrix().scale(0.5, 1.5, 0.5);
 
 	DebugRenderer::setCamera(pCamera);
 
 	Light light;
 	light.Position = Vector(0, 5, 0);
-
+	light.Direction = Vector(1, -1, 0);
+	light.Attenuation = Vector(2, 0, 0.01);
+	light.SpotRadius = Vector(M_PI / 5, M_PI / 3, 0);
+	light.Type = Light::DIRECTIONAL;
+	GameShader::GetInstance()->addLight(light);
+	light.Direction = Vector(-1, -1, 0);
 	GameShader::GetInstance()->addLight(light);
 
-	AABB aabb(Vector(-1, -1, -1), Vector(1, 1, 1));
-	float n = 0;
-	LOG("After\n");
-	// Main Application loop
-	int frameN = 0;
-	LOG_CALL(glEnable, GL_DEPTH_TEST);
-	while (!glfwWindowShouldClose(window)) {
-		pCamera->setView(pCamera->getView() * Matrix().rotationY(0.01f));
-		if (frameN < 120 || true)
-		{
-			LOG_CALL(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		}
+	GameObject* pGameObject = new BowlingBall();
+	pGameObject->setVelocity(Vector(1, 0, 0));
+	//gameObjects.emplace_back(pGameObject);
 
-		//pConstantShader->activate();
-		//glDrawArrays(GL_LINE_STRIP, 0, 3);
-		//testOrientation *= testOrientationDelta;
-		//DebugRenderer::drawAABB(aabb,testOrientation);
-		//DebugRenderer::drawLine(Vector(0, 0, 0), Vector(0, 1, 0),testOrientation);
-		//DebugRenderer::drawSphere(Vector(0,0,0),0.5f);
-		model.draw(pCamera);
-		//DebugRenderer::drawCylinder(cylinderTransform);
-		DebugRenderer::drawLine(Vector(0, 0, 0), Vector(0, 5, 0));
-		glfwSwapBuffers(window);
+	pGameObject = new Pin();
+	gameObjects.emplace_back(pGameObject);
+}
 
-		glfwPollEvents();
-		GLenum Error = glGetError();
-		if (Error != GL_NO_ERROR) {
-			fprintf(stderr, "Error Code: %x\n", Error);
-			//exit(1);
-		}
-		frameN++;
+void CheckErrors() {
+	GLenum Error = glGetError();
+	if (Error != GL_NO_ERROR) {
+		fprintf(stderr, "Error Code: %x\n", Error);
+		exit(1);
 	}
-	glfwTerminate();
-	return EXIT_SUCCESS;
 }

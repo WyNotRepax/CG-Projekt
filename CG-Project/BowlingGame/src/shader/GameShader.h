@@ -11,6 +11,7 @@
 #define GAME_SHADER_LIGHTS_DIRECTION_UNIFORM_NAME "Direction"
 #define GAME_SHADER_LIGHTS_ATTENUATION_UNIFORM_NAME "Attenuation"
 #define GAME_SHADER_LIGHTS_SPOTRADIUS_UNIFORM_NAME "SpotRadius"
+#define GAME_SHADER_LIGHTCOUNT_UNIFORM_NAME "LightCount"
 
 #define GAME_SHADER_MODELVIEWPROJ_UNIFORM_NAME "ModelViewProj"
 #define GAME_SHADER_DIFFTEX_UNIFORM_NAME "DiffTex"
@@ -75,6 +76,7 @@ private:
 	struct LightLoc mLightLocs[GAME_SHADER_MAX_LIGHTS];
 	unsigned int mLightCount = 0;
 	bool mLightsChanged = true;
+	GLint mLightCountLoc = 0;
 
 
 	//Member Funcions

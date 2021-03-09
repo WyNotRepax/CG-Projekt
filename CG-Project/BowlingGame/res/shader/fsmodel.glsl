@@ -34,17 +34,37 @@ float sat(in float f){
 }
 
 void main(){
-	vec3 N = normalize(normal);
-	vec3 L = normalize(Lights[0].Position-pos);
-	vec3 E = normalize(EyePos - pos);
-	vec3 R = reflect(-L,N);
-	
 	vec4 TexColor = texture(DiffTex, texCoord);
-	vec3 Diff = DiffuseColor * TexColor.rgb * sat(dot(N,L));
-	vec3 Spec = Lights[0].Color * SpecularColor * pow(sat(dot(R,E)), SpecularExp);
+	vec3 N = normalize(normal);
+	vec3 E = normalize(EyePos - pos);
+
+	vec3 TotalDiff = vec3(0,0,0);
+	vec3 TotalSpec = vec3(0,0,0);
+
+	for(unsigned int lightIndex = 0; lightIndex < LightCount; lightIndex++){
+		vec3 L;
+		float I;
+		if(Lights[lightIndex].Type == 1){ 
+			L = -Lights[lightIndex].Direction;
+			I = 1;
+		}
+		else{
+			L = normalize(Lights[lightIndex].Position - pos);
+			float dist = distance(Lights[lightIndex].Position,pos);
+			I = 1.0 / (Lights[lightIndex].Attenuation.x + Lights[lightIndex].Attenuation.y * dist + Lights[lightIndex].Attenuation.z * dist * dist);
+			if(Lights[lightIndex].Type == 2){
+                float ang = abs(acos(dot(normalize(Lights[lightIndex].Direction), -L)));
+                I = I * sat((ang-Lights[lightIndex].SpotRadius.y)/(Lights[lightIndex].SpotRadius.x-Lights[lightIndex].SpotRadius.y));  //*(1/(dist*dist))
+			}
+		}
+		vec3 R = reflect(-L,N);
+		vec3 Diff = DiffuseColor * TexColor.rgb * sat(dot(N,L));
+		vec3 Spec = Lights[lightIndex].Color * SpecularColor * pow(sat(dot(R,E)), SpecularExp);
+		TotalDiff += Diff * I;
+		TotalSpec += Spec * I;
+	}
 	vec3 Amb = AmbientColor * TexColor.rgb;
-	vec3 DiffuseColor2 = vec3(1,1,1) ;
-	FragColor = vec4(Diff + Spec + Amb,1);
+	FragColor = vec4(TotalDiff + TotalSpec + Amb,1);
 	
 
 }

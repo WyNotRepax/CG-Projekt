@@ -181,12 +181,12 @@ xcopy /y /d "$(SolutionDir)Dependencies\assimp\lib\*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\game\Pin.cpp" />
+    <ClCompile Include="src\game\BowlingBall.cpp" />
+    <ClCompile Include="SRC\GAMEOBJECT.CPP" />
     <ClCompile Include="src\shader\Light.cpp" />
-    <ClCompile Include="src\collider\CylinderCollider.cpp" />
-    <ClCompile Include="src\collider\Collider.cpp" />
     <ClCompile Include="src\shader\GameShader.cpp" />
-    <ClCompile Include="src\collider\SphereCollider.cpp" />
-    <ClCompile Include="src\GameObject.cpp" />
+    <ClCompile Include="src\game\GameObject.cpp" />
     <ClCompile Include="src\renderer\DebugRenderer.cpp" />
     <ClCompile Include="src\math\AABB.cpp" />
     <ClCompile Include="src\renderer\Camera.cpp" />
@@ -199,12 +199,11 @@ xcopy /y /d "$(SolutionDir)Dependencies\assimp\lib\*.dll" "$(OutDir)"</Command>
     <ClCompile Include="src\math\VectorMath.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\game\Pin.h" />
+    <ClInclude Include="src\game\BowlingBall.h" />
     <ClInclude Include="src\shader\Light.h" />
-    <ClInclude Include="src\collider\CylinderCollider.h" />
     <ClInclude Include="src\shader\GameShader.h" />
-    <ClInclude Include="src\collider\SphereCollider.h" />
-    <ClInclude Include="src\collider\Collider.h" />
-    <ClInclude Include="src\GameObject.h" />
+    <ClInclude Include="src\game\GameObject.h" />
     <ClInclude Include="src\Logging.h" />
     <ClInclude Include="src\renderer\DebugRenderer.h" />
     <ClInclude Include="src\math\AABB.h" />

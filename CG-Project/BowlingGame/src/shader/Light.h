@@ -8,7 +8,9 @@ class Light
 public:
 	enum LightType
 	{
-		POINT = 0
+		POINT = 0,
+		DIRECTIONAL = 1,
+		SPOT = 2
 	};
 	LightType Type = LightType::POINT;
 	Vector Color = Vector(1,1,1);
