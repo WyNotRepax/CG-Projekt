@@ -18,18 +18,36 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+enum class Gamestate {
+	selectPos,
+	selectAng,
+	selectPower,
+	simulating
+};
+
+enum class CameraMode {
+	staticMode,
+	followMode
+};
+
 Camera* pCamera = nullptr;
 GLFWwindow* pWindow = nullptr;
-
+Gamestate state;
+CameraMode cameraMode;
 std::vector<GameObject*> gameObjects;
 BowlingBall* pBall;
 
 void Draw();
 void Update(float dt);
+void UpdateSimulation(float dt);
+void UpdateSelectPos(float dt);
+void UpdateSelectAng(float dt);
+void UpdateSelectPower(float dt);
 void Setup();
 void SetupGL();
 void CheckErrors();
 void ResolveCollisions();
+bool switchState();
 
 int main() {
 
@@ -46,7 +64,6 @@ int main() {
 		float currentTime = glfwGetTime();
 		Update(currentTime - lastTime);
 		lastTime = currentTime;
-		ResolveCollisions();
 		Draw();
 
 		glfwSwapBuffers(pWindow);
@@ -94,10 +111,57 @@ void Draw() {
 }
 
 void Update(float dt) {
+	switch (state) {
+	case Gamestate::simulating:
+		UpdateSimulation(dt);
+		break;
+	case Gamestate::selectPos:
+		UpdateSelectPos(dt);
+		break;
+	case Gamestate::selectAng:
+		UpdateSelectAng(dt);
+	}
 	Vector pos = pBall->getPosition();
-	pCamera->setView(Matrix().lookAt(pos, Vector(0, 1, 0), pos + Vector(0, 2, 5)));
-	for (auto it = gameObjects.begin(); it != gameObjects.end(); it++) {
-		(*it)->update(dt);
+
+	switch (cameraMode)
+	{
+	case CameraMode::followMode:
+		pCamera->setView(Matrix().lookAt(pos, Vector(0, 1, 0), pos + Vector(0, 2, 5)));
+		break;
+	case CameraMode::staticMode:
+		pCamera->setView(Matrix().lookAt(Vector(0,0,0), Vector(0, 1, 0), Vector(0, 2, 5)));
+	}
+}
+
+void UpdateSimulation(float dt) {
+	for (auto pGameObject : gameObjects) {
+		pGameObject->update(dt);
+	}
+	ResolveCollisions();
+}
+
+float selectedPosAng;
+static const float speed = 1;
+void UpdateSelectPos(float dt) {
+	static const float speed = 1;
+	selectedPosAng += dt * speed;
+	selectedPosAng = fmod(selectedPosAng, 2 * M_PI);
+	pBall->setPosition(Vector(cos(selectedPosAng), 0, 0));
+	if (switchState()) {
+		state = Gamestate::selectAng;
+	}
+}
+
+float selectedAngAng = 0;
+float selectedAng = 0;
+float maxAng = M_PI / 6;
+void UpdateSelectAng(float dt) {
+	static const float speed = 1;
+	selectedAngAng += dt * speed;
+	if (switchState()) {
+		selectedAng = cos(selectedAngAng) * maxAng;
+		pBall->setVelocity(Vector(sin(selectedAng), 0, -cos(selectedAng)));
+		state = Gamestate::simulating;
 	}
 }
 
@@ -162,6 +226,8 @@ void Setup() {
 	pGameObject = new Pin();
 	pGameObject->setPosition(Vector(0.465, 0, -19.145));
 	gameObjects.emplace_back(pGameObject);
+
+	state = Gamestate::selectPos;
 }
 
 void CheckErrors() {
@@ -201,4 +267,17 @@ void ResolveCollisions() {
 			}
 		}
 	}
+}
+
+bool switchState() {
+	static bool block = false;
+	int state = glfwGetKey(pWindow, GLFW_KEY_SPACE);
+	if (!block && state == GLFW_PRESS) {
+		block = true;
+		return true;
+	}
+	if (state == GLFW_RELEASE) {
+		block = false;
+	}
+	return false;
 }

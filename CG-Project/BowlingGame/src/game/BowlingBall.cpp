@@ -14,4 +14,5 @@ BowlingBall::BowlingBall() :GameObject() {
 void BowlingBall::draw(Camera* pCamera) {
 	GameObject::draw(pCamera);
 	DebugRenderer::drawUnitSphere(Vector(), Matrix().translation(mPosition) * mDebugStaticTransform);
+	DebugRenderer::drawLine(mPosition, mPosition + (mVelocity ));
 };
