@@ -4,13 +4,14 @@
 
 
 BowlingBall::BowlingBall() :GameObject() {
-	mRadius = 1;
-	mMass = 1;
+	mRadius = 0.2183 / 2;
+	mInverseMass = 1 / 5;
 	pModel = new Model(MODEL_DIR"/ball.dae");
-	mDrag = 0.6;
+	mDrag = 0.01;
+	mDebugStaticTransform = Matrix().translation(0, mRadius, 0) * Matrix().scale(mRadius);
 }
 
 void BowlingBall::draw(Camera* pCamera) {
 	GameObject::draw(pCamera);
-	DebugRenderer::drawSphere(Vector(0, 0, 0), mRadius, Matrix().translation(mPosition));
+	DebugRenderer::drawUnitSphere(Vector(), Matrix().translation(mPosition) * mDebugStaticTransform);
 };

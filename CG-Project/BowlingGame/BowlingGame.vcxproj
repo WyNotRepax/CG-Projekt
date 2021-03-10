@@ -183,7 +183,6 @@ xcopy /y /d "$(SolutionDir)Dependencies\assimp\lib\*.dll" "$(OutDir)"</Command>
   <ItemGroup>
     <ClCompile Include="src\game\Pin.cpp" />
     <ClCompile Include="src\game\BowlingBall.cpp" />
-    <ClCompile Include="SRC\GAMEOBJECT.CPP" />
     <ClCompile Include="src\shader\Light.cpp" />
     <ClCompile Include="src\shader\GameShader.cpp" />
     <ClCompile Include="src\game\GameObject.cpp" />

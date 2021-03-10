@@ -13,7 +13,7 @@ protected:
 	Vector mPosition = Vector(0,0,0);
 	Vector mVelocity = Vector(0,0,0);
 	float mRadius = 1;
-	float mMass = 1;
+	float mInverseMass = 1;
 	float mDrag = 0;
 
 	GameObject();
@@ -23,5 +23,11 @@ public:
 	void setVelocity(const Vector& velocity);
 	void update(float dt);
 	virtual void draw(Camera* pCamera);
+	bool collidesWith(GameObject* pOther);
+	bool collideWith(GameObject* pOther);
+	Vector getRelativePosition(GameObject* pOther) const;
+	Vector getRelativeVelocity(GameObject* pOther) const;
+	void setPosition(const Vector& v);
+	Vector getPosition() const;
 };
 

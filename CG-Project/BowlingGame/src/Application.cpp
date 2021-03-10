@@ -22,12 +22,14 @@ Camera* pCamera = nullptr;
 GLFWwindow* pWindow = nullptr;
 
 std::vector<GameObject*> gameObjects;
+BowlingBall* pBall;
 
 void Draw();
 void Update(float dt);
 void Setup();
 void SetupGL();
 void CheckErrors();
+void ResolveCollisions();
 
 int main() {
 
@@ -36,7 +38,7 @@ int main() {
 	SetupGL();
 	Setup();
 	// Main Application loop
-	
+
 	float lastTime = 0;
 	while (!glfwWindowShouldClose(pWindow)) {
 		glfwPollEvents();
@@ -44,7 +46,7 @@ int main() {
 		float currentTime = glfwGetTime();
 		Update(currentTime - lastTime);
 		lastTime = currentTime;
-
+		ResolveCollisions();
 		Draw();
 
 		glfwSwapBuffers(pWindow);
@@ -92,13 +94,15 @@ void Draw() {
 }
 
 void Update(float dt) {
+	Vector pos = pBall->getPosition();
+	pCamera->setView(Matrix().lookAt(pos, Vector(0, 1, 0), pos + Vector(0, 2, 5)));
 	for (auto it = gameObjects.begin(); it != gameObjects.end(); it++) {
 		(*it)->update(dt);
 	}
 }
 
 void Setup() {
-	pCamera = new Camera(Matrix().lookAt(Vector(0, 0, 0), Vector(0, 1, 0), Vector(5, 2, 0)), Matrix().perspective(70, 16.0f / 9.0f, 0.01, 100));
+	pCamera = new Camera(Matrix().lookAt(Vector(0, 0, -18), Vector(0, 1, 0), Vector(0, 2, 5)), Matrix().perspective(M_PI /4, 16.0f / 9.0f, 0.01, 100));
 
 	DebugRenderer::setCamera(pCamera);
 
@@ -112,11 +116,51 @@ void Setup() {
 	light.Direction = Vector(-1, -1, 0);
 	GameShader::GetInstance()->addLight(light);
 
-	GameObject* pGameObject = new BowlingBall();
-	pGameObject->setVelocity(Vector(1, 0, 0));
-	//gameObjects.emplace_back(pGameObject);
+	// Setup Ball
+	pBall = new BowlingBall();
+	pBall->setVelocity(Vector(0, 0, -5));
+	pBall->setPosition(Vector(0.1, 0, 0));
+	gameObjects.emplace_back(pBall);
+
+
+	GameObject* pGameObject = new Pin();
+	pGameObject->setPosition(Vector(0, 0,-18.395));
+	gameObjects.emplace_back(pGameObject);
 
 	pGameObject = new Pin();
+	pGameObject->setPosition(Vector(0, 0, -18.895));
+	gameObjects.emplace_back(pGameObject);
+
+	pGameObject = new Pin();
+	pGameObject->setPosition(Vector(-0.155, 0, -18.645));
+	gameObjects.emplace_back(pGameObject);
+
+	pGameObject = new Pin();
+	pGameObject->setPosition(Vector(-0.155, 0, -19.145));
+	gameObjects.emplace_back(pGameObject);
+
+	pGameObject = new Pin();
+	pGameObject->setPosition(Vector(-0.31, 0, -18.895));
+	gameObjects.emplace_back(pGameObject);
+
+	pGameObject = new Pin();
+	pGameObject->setPosition(Vector(-0.465, 0, -19.145));
+	gameObjects.emplace_back(pGameObject);
+
+	pGameObject = new Pin();
+	pGameObject->setPosition(Vector(0.155, 0, -18.645));
+	gameObjects.emplace_back(pGameObject);
+	
+	pGameObject = new Pin();
+	pGameObject->setPosition(Vector(0.155, 0, -19.145));
+	gameObjects.emplace_back(pGameObject);
+	
+	pGameObject = new Pin();
+	pGameObject->setPosition(Vector(0.31, 0, -18.895));
+	gameObjects.emplace_back(pGameObject);
+	
+	pGameObject = new Pin();
+	pGameObject->setPosition(Vector(0.465, 0, -19.145));
 	gameObjects.emplace_back(pGameObject);
 }
 
@@ -125,5 +169,36 @@ void CheckErrors() {
 	if (Error != GL_NO_ERROR) {
 		fprintf(stderr, "Error Code: %x\n", Error);
 		exit(1);
+	}
+}
+
+struct Collision {
+	GameObject* pGameObject1;
+	GameObject* pGameObject2;
+	Collision(GameObject* p1, GameObject* p2) {
+		pGameObject1 = p1;
+		pGameObject2 = p2;
+	}
+};
+
+void ResolveCollisions() {
+	std::vector<struct Collision> collisions;
+	for (int i1 = 0; i1 < gameObjects.size(); i1++) {
+		for (int i2 = i1 + 1; i2 < gameObjects.size(); i2++) {
+			GameObject* pGameObject1 = gameObjects[i1];
+			GameObject* pGameObject2 = gameObjects[i2];
+			if (pGameObject1->collidesWith(pGameObject2)) {
+				collisions.emplace_back(pGameObject1, pGameObject2);
+			}
+		}
+	}
+	bool resolved = false;
+	while (!resolved) {
+		resolved = true;
+		for (Collision& c : collisions) {
+			if (c.pGameObject1->collideWith(c.pGameObject2)) {
+				resolved = false;
+			}
+		}
 	}
 }

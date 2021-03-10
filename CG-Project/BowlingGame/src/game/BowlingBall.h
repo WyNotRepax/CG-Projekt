@@ -6,5 +6,8 @@ class BowlingBall :
 public:
     BowlingBall();
     void draw(Camera* pCamera) override;
+private:
+    Matrix mDebugStaticTransform;
+
 };
 
