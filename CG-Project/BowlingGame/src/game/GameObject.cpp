@@ -1,4 +1,5 @@
 #include "GameObject.h"
+#include "../shader/GameShader.h"
 
 GameObject::GameObject()
 {
@@ -18,18 +19,27 @@ void GameObject::update(float dt)
 {
 	mPosition += mVelocity * dt;
 	mVelocity += (mVelocity * -mDrag)*dt;
-	if (mVelocity.magnitude() < VELOCITY_THRESHOLD) {
+	if (mVelocity.magnitudeSquared() < VELOCITY_THRESHOLD*VELOCITY_THRESHOLD) {
 		mVelocity = Vector(0, 0, 0);
 	}
 }
 
-void GameObject::draw(Camera* pCamera) {
+void GameObject::draw(Camera* pCamera, Shader* pShader) {
+    if (!mDraw) {
+        return;
+    }
 	if (pModel) {
-		pModel->draw(pCamera, Matrix().translation(mPosition));
+		pModel->draw(pCamera, Matrix().translation(mPosition), pShader);
 	}
 }
 
 bool GameObject::collidesWith(GameObject* pOther) {
+    if (!mPhysics) {
+        return false;
+    }
+    if (!pOther->mPhysics) {
+        return false;
+    }
 	return (mPosition - pOther->mPosition).magnitude() < mRadius + pOther->mRadius;
 }
 
@@ -72,4 +82,28 @@ void GameObject::setPosition(const Vector& v)
 
 Vector GameObject::getPosition() const {
     return mPosition;
+}
+
+Vector GameObject::getVelocity() const
+{
+    return mVelocity;
+}
+
+void GameObject::activate()
+{
+    setActive(true);
+}
+
+void GameObject::deactivate() {
+    setActive(false);
+}
+
+bool GameObject::getActive()
+{
+    return mDraw;
+}
+
+void GameObject::setActive(bool active)
+{
+    mDraw = active;
 }

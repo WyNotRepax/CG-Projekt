@@ -5,8 +5,21 @@ class BowlingBall :
 {
 public:
     BowlingBall();
-    void draw(Camera* pCamera) override;
+    void draw(Camera* pCamera, Shader* pShader) override;
+    void update(float dt) override;
 private:
+
+    enum class SimulationState {
+        normal,
+        movingToGutterLeft,
+        movingToGutterRight,
+        movingInGutterLeft,
+        movingInGutterRight,
+        waiting
+    };
+
+    SimulationState mSimulationState = SimulationState::normal;
+
     Matrix mDebugStaticTransform;
 
 };

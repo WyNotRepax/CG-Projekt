@@ -9,10 +9,12 @@ layout(location=2) in vec2 texCoordIn;
 
 out vec2 texCoord;
 out vec3 pos;
+out vec4 ndc;
 out vec3 normal;
 
 void main(){
 	gl_Position =  ModelViewProj * positionIn;
+	ndc = ModelViewProj * positionIn;
 	texCoord = texCoordIn;
 	pos = (Model * positionIn).xyz;
 	normal = (Model * vec4(normalIn.xyz,0)).xyz;

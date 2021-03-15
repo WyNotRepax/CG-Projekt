@@ -11,7 +11,7 @@ Pin::Pin() :GameObject() {
 	mPosition = Vector(3, 0, 0);
 }
 
-void Pin::draw(Camera* pCamera) {
-	GameObject::draw(pCamera);
+void Pin::draw(Camera* pCamera, Shader*pShader) {
+	GameObject::draw(pCamera,pShader);
 	//DebugRenderer::drawCylinder(Matrix().translation(mPosition) * mDebugStaticTransform);
 };

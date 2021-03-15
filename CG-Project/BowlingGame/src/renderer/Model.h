@@ -1,5 +1,5 @@
 #pragma once
-#include "../shader/GameShader.h"
+#include "../shader/Shader.h"
 #include "Camera.h"
 #include <assimp/scene.h>
 
@@ -9,7 +9,6 @@ public:
 	Matrix mTransform;
 
 private:
-	GameShader* pShader;
 
 	struct Mesh {
 		GLuint vaoId;
@@ -34,7 +33,7 @@ private:
 public:
 	Model(const std::string& path);
 	~Model();
-	void draw(const Camera* camera,const Matrix& parentTransform)const;
+	void draw(const Camera* pCamera, const Matrix& parentTransform, Shader* pShader) const;
 
 private:
 	bool load(std::string path);

@@ -14,6 +14,10 @@
 #include "game/GameObject.h"
 #include "game/BowlingBall.h"
 #include "game/Pin.h"
+#include "game/Background.h"
+#include "game/Arrow.h"
+#include "shader/GameShader.h"
+#include "shader/ShadowShader.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -25,17 +29,14 @@ enum class Gamestate {
 	simulating
 };
 
-enum class CameraMode {
-	staticMode,
-	followMode
-};
 
 Camera* pCamera = nullptr;
 GLFWwindow* pWindow = nullptr;
 Gamestate state;
-CameraMode cameraMode;
+bool followCam;
 std::vector<GameObject*> gameObjects;
 BowlingBall* pBall;
+Arrow* pArrow;
 
 void Draw();
 void Update(float dt);
@@ -48,6 +49,8 @@ void SetupGL();
 void CheckErrors();
 void ResolveCollisions();
 bool switchState();
+bool switchCam();
+bool SimulationDone();
 
 int main() {
 
@@ -100,17 +103,21 @@ void SetupGL() {
 
 	// Enable Depth testing
 	LOG_CALL(glEnable, GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 }
 
 void Draw() {
+	GameShader::GetInstance()->generateShadows(gameObjects);
+
 	LOG_CALL(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	for (auto it = gameObjects.begin(); it != gameObjects.end(); it++) {
-		(*it)->draw(pCamera);
+	for (auto pGameObject : gameObjects) {
+		pGameObject->draw(pCamera, GameShader::GetInstance());
 	}
 }
 
 void Update(float dt) {
+	pArrow->setPosition(pBall->getPosition());
 	switch (state) {
 	case Gamestate::simulating:
 		UpdateSimulation(dt);
@@ -120,17 +127,19 @@ void Update(float dt) {
 		break;
 	case Gamestate::selectAng:
 		UpdateSelectAng(dt);
-	}
-	Vector pos = pBall->getPosition();
-
-	switch (cameraMode)
-	{
-	case CameraMode::followMode:
-		pCamera->setView(Matrix().lookAt(pos, Vector(0, 1, 0), pos + Vector(0, 2, 5)));
 		break;
-	case CameraMode::staticMode:
-		pCamera->setView(Matrix().lookAt(Vector(0,0,0), Vector(0, 1, 0), Vector(0, 2, 5)));
+	case Gamestate::selectPower:
+		UpdateSelectPower(dt);
+		break;
 	}
+	Vector pos; 
+	if (switchCam()) {
+		followCam = !followCam;
+	}
+	if (followCam) {
+		pos = pBall->getPosition();
+	}
+	pCamera->setView(Matrix().lookAt(pos + Vector(0, 0, -9), Vector(0, 1, 0), pos + Vector(0, 1, 5)));
 }
 
 void UpdateSimulation(float dt) {
@@ -138,46 +147,83 @@ void UpdateSimulation(float dt) {
 		pGameObject->update(dt);
 	}
 	ResolveCollisions();
+
+	if (SimulationDone()) {
+		state = Gamestate::selectPos;
+		pBall->setPosition(Vector(0, 0, 0));
+	}
 }
 
 float selectedPosAng;
 static const float speed = 1;
+float maxPos = 0.5;
 void UpdateSelectPos(float dt) {
 	static const float speed = 1;
 	selectedPosAng += dt * speed;
 	selectedPosAng = fmod(selectedPosAng, 2 * M_PI);
-	pBall->setPosition(Vector(cos(selectedPosAng), 0, 0));
+	pBall->setPosition(Vector(cos(selectedPosAng) * maxPos, 0, 0));
 	if (switchState()) {
 		state = Gamestate::selectAng;
+		pArrow->activate();
 	}
 }
 
 float selectedAngAng = 0;
 float selectedAng = 0;
-float maxAng = M_PI / 6;
+float maxAng = M_PI / 8;
 void UpdateSelectAng(float dt) {
 	static const float speed = 1;
 	selectedAngAng += dt * speed;
+	selectedAng = cos(selectedAngAng) * maxAng;
+	pArrow->setRotation(selectedAng);
 	if (switchState()) {
-		selectedAng = cos(selectedAngAng) * maxAng;
-		pBall->setVelocity(Vector(sin(selectedAng), 0, -cos(selectedAng)));
+		state = Gamestate::selectPower;
+	}
+}
+float selectedPower = 0;
+float powerSelectSpeed = 1;
+float maxPower = 5;
+float minPower = 1;
+
+void UpdateSelectPower(float dt) {
+	selectedPower = fmod(selectedPower + powerSelectSpeed * dt, 2);
+	float calculatedPower = minPower + (maxPower - minPower) * (selectedPower - 1) * (selectedPower - 1);
+	pArrow->setPowerScale(calculatedPower);
+	if (switchState()) {
+		pBall->setVelocity(Vector(sin(selectedAng), 0, -cos(selectedAng)) * calculatedPower);
+		pArrow->deactivate();
 		state = Gamestate::simulating;
 	}
 }
 
 void Setup() {
-	pCamera = new Camera(Matrix().lookAt(Vector(0, 0, -18), Vector(0, 1, 0), Vector(0, 2, 5)), Matrix().perspective(M_PI /4, 16.0f / 9.0f, 0.01, 100));
+	pCamera = new Camera(Matrix().lookAt(Vector(0, 0, -18), Vector(0, 1, 0), Vector(0, 2, 5)), Matrix().perspective(0.4, 16.0f / 9.0f, 0.01, 100));
 
 	DebugRenderer::setCamera(pCamera);
 
 	Light light;
 	light.Position = Vector(0, 5, 0);
-	light.Direction = Vector(1, -1, 0);
+	light.Direction = Vector(0, -1, -1);
 	light.Attenuation = Vector(2, 0, 0.01);
-	light.SpotRadius = Vector(M_PI / 5, M_PI / 3, 0);
+	light.SpotRadius = Vector(M_PI / 7, M_PI / 3, 0);
+	light.Color = Vector(0.1, 0.1, 0.1);
 	light.Type = Light::DIRECTIONAL;
-	GameShader::GetInstance()->addLight(light);
+	//GameShader::GetInstance()->addLight(light);
 	light.Direction = Vector(-1, -1, 0);
+	GameShader::GetInstance()->addLight(light);
+	light.Color = Vector(1, 1, 1);
+	light.Direction = Vector(0, -1, 0);
+	light.Position = Vector(0, 4, -5);
+	light.Type = Light::SPOT;
+	GameShader::GetInstance()->addLight(light);
+	light.Position = Vector(0, 4, -10);
+	GameShader::GetInstance()->addLight(light);
+	light.Position = Vector(0, 4, -15);
+	GameShader::GetInstance()->addLight(light);
+	light.Position = Vector(0, 4, 0);
+	GameShader::GetInstance()->addLight(light);
+	light.Direction = Vector(0, -1, -1);
+	light.Position = Vector(0, 4, -15);
 	GameShader::GetInstance()->addLight(light);
 
 	// Setup Ball
@@ -188,7 +234,7 @@ void Setup() {
 
 
 	GameObject* pGameObject = new Pin();
-	pGameObject->setPosition(Vector(0, 0,-18.395));
+	pGameObject->setPosition(Vector(0, 0, -18.395));
 	gameObjects.emplace_back(pGameObject);
 
 	pGameObject = new Pin();
@@ -214,18 +260,24 @@ void Setup() {
 	pGameObject = new Pin();
 	pGameObject->setPosition(Vector(0.155, 0, -18.645));
 	gameObjects.emplace_back(pGameObject);
-	
+
 	pGameObject = new Pin();
 	pGameObject->setPosition(Vector(0.155, 0, -19.145));
 	gameObjects.emplace_back(pGameObject);
-	
+
 	pGameObject = new Pin();
 	pGameObject->setPosition(Vector(0.31, 0, -18.895));
 	gameObjects.emplace_back(pGameObject);
-	
+
 	pGameObject = new Pin();
 	pGameObject->setPosition(Vector(0.465, 0, -19.145));
 	gameObjects.emplace_back(pGameObject);
+
+	pGameObject = new Background();
+	gameObjects.emplace_back(pGameObject);
+
+	pArrow = new Arrow();
+	gameObjects.emplace_back(pArrow);
 
 	state = Gamestate::selectPos;
 }
@@ -280,4 +332,32 @@ bool switchState() {
 		block = false;
 	}
 	return false;
+}
+
+bool switchCam() {
+	static bool block = false;
+	int state = glfwGetKey(pWindow, GLFW_KEY_C);
+	if (!block && state == GLFW_PRESS) {
+		block = true;
+		return true;
+	}
+	if (state == GLFW_RELEASE) {
+		block = false;
+	}
+	return false;
+}
+
+bool SimulationDone() {
+	bool stillMoving = false;
+	for (auto pGameObject : gameObjects) {
+		if (!pGameObject->getActive()) {
+			// Skip inaktive Objects
+			continue;
+		}
+		if (pGameObject->getVelocity().magnitudeSquared() > 0) {
+			stillMoving = true;
+			break;
+		}
+	}
+	return !stillMoving;
 }

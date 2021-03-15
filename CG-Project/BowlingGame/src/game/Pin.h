@@ -5,7 +5,7 @@ class Pin :
 {
 public:
     Pin();
-    void draw(Camera* pCamera) override;
+    void draw(Camera* pCamera, Shader* pShader) override;
 private:
     Matrix mDebugStaticTransform;
 };

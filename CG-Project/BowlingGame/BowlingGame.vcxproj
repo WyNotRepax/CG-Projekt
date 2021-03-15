@@ -181,6 +181,9 @@ xcopy /y /d "$(SolutionDir)Dependencies\assimp\lib\*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\shader\ShadowShader.cpp" />
+    <ClCompile Include="src\game\Arrow.cpp" />
+    <ClCompile Include="src\game\Background.cpp" />
     <ClCompile Include="src\game\Pin.cpp" />
     <ClCompile Include="src\game\BowlingBall.cpp" />
     <ClCompile Include="src\shader\Light.cpp" />
@@ -198,6 +201,9 @@ xcopy /y /d "$(SolutionDir)Dependencies\assimp\lib\*.dll" "$(OutDir)"</Command>
     <ClCompile Include="src\math\VectorMath.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\shader\ShadowShader.h" />
+    <ClInclude Include="src\game\Arrow.h" />
+    <ClInclude Include="src\game\Background.h" />
     <ClInclude Include="src\game\Pin.h" />
     <ClInclude Include="src\game\BowlingBall.h" />
     <ClInclude Include="src\shader\Light.h" />
@@ -217,10 +223,11 @@ xcopy /y /d "$(SolutionDir)Dependencies\assimp\lib\*.dll" "$(OutDir)"</Command>
     <ClInclude Include="src\math\VectorMath.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\Hausarbeit_Computergrafik_Benno_Steinkamp\CLion\res\models\enemy_body.dae" />
     <None Include="res\shader\fsconstant.glsl" />
+    <None Include="res\shader\fsdepth.glsl" />
     <None Include="res\shader\fsmodel.glsl" />
     <None Include="res\shader\vsconstant.glsl" />
+    <None Include="res\shader\vsdepth.glsl" />
     <None Include="res\shader\vsmodel.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

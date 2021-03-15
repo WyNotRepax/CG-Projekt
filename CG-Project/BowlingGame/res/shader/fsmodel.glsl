@@ -5,6 +5,7 @@ uniform vec3 Color;
 in vec2 texCoord;
 in vec3 pos;
 in vec3 normal;
+in vec4 ndc;
 
 out vec4 FragColor;
 
@@ -15,7 +16,7 @@ uniform float SpecularExp;
 uniform sampler2D DiffTex;
 uniform vec3 EyePos;
 
-const int MAX_LIGHTS=32;
+const int MAX_LIGHTS=31;
 struct Light
 {
 	int Type;
@@ -24,6 +25,8 @@ struct Light
 	vec3 Direction;
 	vec3 Attenuation;
 	vec3 SpotRadius;
+	sampler2D ShadowMapTexture;
+	mat4x4 Mat;
 };
 
 uniform int LightCount;
@@ -34,6 +37,9 @@ float sat(in float f){
 }
 
 void main(){
+	vec3 Test = ndc.xyz / ndc.w;
+	vec2 screenKoord = (Test.xy + vec2(1,1)) * 0.5;
+
 	vec4 TexColor = texture(DiffTex, texCoord);
 	vec3 N = normalize(normal);
 	vec3 E = normalize(EyePos - pos);
@@ -58,10 +64,27 @@ void main(){
 			}
 		}
 		vec3 R = reflect(-L,N);
-		vec3 Diff = DiffuseColor * TexColor.rgb * sat(dot(N,L));
+		vec3 Diff = Lights[lightIndex].Color * DiffuseColor * TexColor.rgb * sat(dot(N,L));
 		vec3 Spec = Lights[lightIndex].Color * SpecularColor * pow(sat(dot(R,E)), SpecularExp);
-		TotalDiff += Diff * I;
-		TotalSpec += Spec * I;
+		if(Lights[lightIndex].Type == 2){
+			vec4 PosSM = Lights[lightIndex].Mat * vec4(pos, 1);
+			PosSM.xyz /= PosSM.w;
+			PosSM.xy = PosSM.xy * 0.5 + 0.5;
+			float DepthSM = texture(Lights[lightIndex].ShadowMapTexture, PosSM.xy).r;
+			if (PosSM.x > 1 || PosSM.x < 0 || PosSM.y > 1 || PosSM.y < 0){
+				TotalDiff += Diff * I;
+				TotalSpec += Spec * I;
+				continue;
+			}
+			else if (DepthSM > PosSM.z || true){
+				// Make the Check always succeed since Shadow Map Generation see GameShader.cpp Line 143
+				TotalDiff += Diff * I;
+				TotalSpec += Spec * I;
+			}
+		}else{
+			TotalDiff += Diff * I;
+			TotalSpec += Spec * I;
+		}
 	}
 	vec3 Amb = AmbientColor * TexColor.rgb;
 	FragColor = vec4(TotalDiff + TotalSpec + Amb,1);

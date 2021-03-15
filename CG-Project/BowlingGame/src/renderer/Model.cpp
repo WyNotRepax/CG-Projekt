@@ -6,9 +6,10 @@
 #include <assimp/mesh.h>
 #include <assimp/material.h>
 #include <FreeImage.h>
+#include "../shader/ShadowShader.h"
+#include "../shader/GameShader.h"
 
 Model::Model(const std::string& path) :mMaterials(nullptr), mMeshes(nullptr), mTransform(Matrix().identity()) {
-	pShader = GameShader::GetInstance();
 	bool loaded = load(path);
 	assert(loaded);
 }
@@ -21,20 +22,32 @@ Model::~Model()
 	mMaterialCount = 0;
 }
 
-void Model::draw(const Camera* pCamera, const Matrix& parentTransform)const {
+void Model::draw(const Camera* pCamera, const Matrix& parentTransform, Shader* pShader)const {
+	GameShader* pGameShader = dynamic_cast<GameShader*>(pShader);
+	ShadowShader* pShadowShader = dynamic_cast<ShadowShader*>(pShader);
+
 	for (unsigned int meshIndex = 0; meshIndex < mMeshCount; meshIndex++) {
 		Mesh& currMesh = mMeshes[meshIndex];
 
+
+
 		//LOG("TRANSFORM:\n %s\n", ((std::string)currMesh.transform).c_str());
-		pShader->setDiffTex(mMaterials[currMesh.materialIndex].texId);
-		pShader->setAmbCol(mMaterials[currMesh.materialIndex].ambientColor);
-		pShader->setDiffCol(mMaterials[currMesh.materialIndex].diffuseColor);
-		pShader->setSpecCol(mMaterials[currMesh.materialIndex].specularColor);
-		pShader->setViewProj(pCamera->getViewProj());
+		if (pGameShader) {
+			pGameShader->setDiffTex(mMaterials[currMesh.materialIndex].texId);
+			pGameShader->setAmbCol(mMaterials[currMesh.materialIndex].ambientColor);
+			pGameShader->setDiffCol(mMaterials[currMesh.materialIndex].diffuseColor);
+			pGameShader->setSpecCol(mMaterials[currMesh.materialIndex].specularColor);
+			pGameShader->setViewProj(pCamera->getViewProj());
+		}
+		else if (pShadowShader) {
+			pShadowShader->setModelViewProj(pCamera->getViewProj() * (parentTransform * mTransform * currMesh.transform));
+		}
 		Matrix invView = pCamera->getView();
 		invView.invert();
-		pShader->setEyePos(invView.translation());
-		pShader->setModel(parentTransform * mTransform * currMesh.transform);
+		if (pGameShader) {
+			pGameShader->setEyePos(invView.translation());
+			pGameShader->setModel(parentTransform * mTransform * currMesh.transform);
+		}
 		pShader->activate();
 
 
@@ -53,6 +66,8 @@ void Model::draw(const Camera* pCamera, const Matrix& parentTransform)const {
 	LOG_CALL(glBindVertexArray, 0);
 	LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, 0);
 }
+
+
 
 bool Model::load(std::string path)
 {
@@ -82,7 +97,7 @@ bool Model::loadMesh(const aiScene* pScene, unsigned int meshIndex) {
 	aiMesh* pAiMesh = pScene->mMeshes[meshIndex];
 	Mesh* pMesh = &mMeshes[meshIndex];
 	pMesh->materialIndex = pAiMesh->mMaterialIndex;
-	LOG("Loading Mesh %s %d vertices \n", pAiMesh->mName.C_Str(), pAiMesh->mNumVertices);
+	//LOG("Loading Mesh %s %d vertices. Material Index:%d\n", pAiMesh->mName.C_Str(), pAiMesh->mNumVertices,pAiMesh->mMaterialIndex);
 	// Load Vertex Data
 	float* vertexData = new float[3 * pAiMesh->mNumVertices];
 	float* vertexNormalData = new float[3 * pAiMesh->mNumVertices];
@@ -152,10 +167,6 @@ bool Model::loadMesh(const aiScene* pScene, unsigned int meshIndex) {
 			}
 		}
 	}
-	for (unsigned int i = 0; i < mMeshes[meshIndex].indexCount; i++) {
-		//LOG("INDEX[%d]=%d\n", i, indexData[i]);
-	}
-	LOG("%d\n", sizeof(unsigned int) * pMesh->indexCount);
 	LOG_CALL(glGenBuffers, 1, &pMesh->indexBufferId);
 	LOG_CALL(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, pMesh->indexBufferId);
 	LOG_CALL(glBufferData, GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * pMesh->indexCount, indexData, GL_STATIC_DRAW);
@@ -167,7 +178,7 @@ bool Model::loadMesh(const aiScene* pScene, unsigned int meshIndex) {
 bool Model::loadMaterials(const aiScene* pScene, const std::string& path) {
 	mMaterialCount = pScene->mNumMaterials;
 	mMaterials = new struct Material[mMaterialCount];
-	LOG("Loading %d materials\n", mMaterialCount);
+	//LOG("Loading %d materials\n", mMaterialCount);
 	for (unsigned int materialIndex = 0; materialIndex < mMaterialCount; materialIndex++) {
 		loadMaterial(pScene, materialIndex, path);
 	}
@@ -175,6 +186,7 @@ bool Model::loadMaterials(const aiScene* pScene, const std::string& path) {
 }
 
 bool Model::loadMaterial(const aiScene* pScene, unsigned int materialIndex, const std::string& path) {
+	//LOG("Loading Material %d\n", materialIndex);
 	aiMaterial* pAiMaterial = pScene->mMaterials[materialIndex];
 	struct Material* pMaterial = mMaterials + materialIndex;
 	aiColor3D c;
@@ -185,10 +197,10 @@ bool Model::loadMaterial(const aiScene* pScene, unsigned int materialIndex, cons
 	pAiMaterial->Get(AI_MATKEY_COLOR_AMBIENT, c);
 	pMaterial->ambientColor = Vector(c.r, c.g, c.b);
 	pAiMaterial->Get(AI_MATKEY_SHININESS, pMaterial->specularExp);
-	LOG("diffuseColor=(%f,%f,%f),specularColor=(%f,%f,%f),ambientColor=(%f,%f,%f)\n",
-		pMaterial->diffuseColor.X, pMaterial->diffuseColor.Y, pMaterial->diffuseColor.Z,
-		pMaterial->specularColor.X, pMaterial->specularColor.Y, pMaterial->specularColor.Z,
-		pMaterial->ambientColor.X, pMaterial->ambientColor.Y, pMaterial->ambientColor.Z);
+	//LOG("diffuseColor=(%f,%f,%f),specularColor=(%f,%f,%f),ambientColor=(%f,%f,%f)\n",
+	//	pMaterial->diffuseColor.X, pMaterial->diffuseColor.Y, pMaterial->diffuseColor.Z,
+	//	pMaterial->specularColor.X, pMaterial->specularColor.Y, pMaterial->specularColor.Z,
+	//	pMaterial->ambientColor.X, pMaterial->ambientColor.Y, pMaterial->ambientColor.Z);
 
 	//Load Texture
 	aiString fileName;
@@ -202,7 +214,7 @@ bool Model::loadMaterial(const aiScene* pScene, unsigned int materialIndex, cons
 		FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(fullPath.c_str());
 		FIBITMAP* pBitMap = FreeImage_Load(imageFormat, fullPath.c_str());
 		if (pBitMap == nullptr) {
-			LOG("Could not open %s\n", fullPath.c_str());
+			//LOG("Could not open %s\n", fullPath.c_str());
 			pMaterial->texId = 0;
 			return false;
 		}
@@ -236,7 +248,7 @@ bool Model::loadMaterial(const aiScene* pScene, unsigned int materialIndex, cons
 
 
 
-	LOG("Width: %d, Height: %d\n", width, height);
+	//LOG("Width: %d, Height: %d\n", width, height);
 	LOG_CALL(glGenTextures, 1, &pMaterial->texId);
 	LOG_CALL(glBindTexture, GL_TEXTURE_2D, pMaterial->texId);
 	LOG_CALL(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -256,7 +268,7 @@ bool Model::loadMaterial(const aiScene* pScene, unsigned int materialIndex, cons
 bool Model::loadMeshes(const aiScene* pScene)
 {
 	bool success = true;
-	LOG("Loading Scene with %d Meshes\n", pScene->mNumMeshes);
+	//LOG("Loading Scene with %d Meshes\n", pScene->mNumMeshes);
 	mMeshCount = pScene->mNumMeshes;
 	mMeshes = new struct Mesh[mMeshCount];
 	for (unsigned int meshIndex = 0; meshIndex < mMeshCount; meshIndex++) {

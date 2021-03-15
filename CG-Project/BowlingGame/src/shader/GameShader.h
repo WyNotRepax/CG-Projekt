@@ -2,8 +2,16 @@
 #include "Shader.h"
 #include "../Directories.h"
 #include "Light.h"
+#include <vector>
+#include "../renderer/Camera.h"
+// Avoids Circular include
+//#include "../game/GameObject.h"
+class GameObject;
 
-#define GAME_SHADER_MAX_LIGHTS 32
+
+#define GAME_SHADER_LIGHTS_SHADOW_MAP_TEXTURE_SIZE 2048
+
+#define GAME_SHADER_MAX_LIGHTS 31
 #define GAME_SHADER_LIGHTS_UNIFORM_NAME "Lights"
 #define GAME_SHADER_LIGHTS_TYPE_UNIFORM_NAME "Type"
 #define GAME_SHADER_LIGHTS_COLOR_UNIFORM_NAME "Color"
@@ -12,6 +20,8 @@
 #define GAME_SHADER_LIGHTS_ATTENUATION_UNIFORM_NAME "Attenuation"
 #define GAME_SHADER_LIGHTS_SPOTRADIUS_UNIFORM_NAME "SpotRadius"
 #define GAME_SHADER_LIGHTCOUNT_UNIFORM_NAME "LightCount"
+#define GAME_SHADER_LIGHTS_DEPTHTEX_UNIFORM_NAME "ShadowMapTexture"
+#define GAME_SHADER_LIGHTS_MATRIX_UNIFORM_NAME "Mat"
 
 #define GAME_SHADER_MODELVIEWPROJ_UNIFORM_NAME "ModelViewProj"
 #define GAME_SHADER_DIFFTEX_UNIFORM_NAME "DiffTex"
@@ -21,17 +31,15 @@
 #define GAME_SHADER_SPECCOL_UNIFORM_NAME "SpecularColor"
 #define GAME_SHADER_SPECEXP_UNIFORM_NAME "SpecularExp"
 #define GAME_SHADER_AMBCOL_UNIFORM_NAME "AmbientColor"
-#define GAME_SHADER_FS_PATH SHADER_DIR"/fsmodel.glsl"
-#define GAME_SHADER_VS_PATH SHADER_DIR"/vsmodel.glsl"
+#define GAME_SHADER_FS_PATH SHADER_DIR "/fsmodel.glsl"
+#define GAME_SHADER_VS_PATH SHADER_DIR "/vsmodel.glsl"
 
-class GameShader: public Shader
+class GameShader : public Shader
 {
 	//Static Variables
 private:
 	static GameShader* pInstance;
 
-	//Member Variables
-private:
 	Matrix mModel;
 	bool mModelChanged;
 	GLint mModelLoc;
@@ -70,19 +78,25 @@ private:
 		GLint directionLoc;
 		GLint attenuationLoc;
 		GLint spotRadiusLoc;
+		GLint texLoc;
+		GLint matLoc;
 	};
+
 
 	Light mLights[GAME_SHADER_MAX_LIGHTS];
 	struct LightLoc mLightLocs[GAME_SHADER_MAX_LIGHTS];
+	GLuint mShadowMapTex[GAME_SHADER_MAX_LIGHTS];
 	unsigned int mLightCount = 0;
 	bool mLightsChanged = true;
 	GLint mLightCountLoc = 0;
+	GLuint mFrameBufferId = 0;
+	Camera mShadowCam;
 
 
 	//Member Funcions
 public:
 	GameShader(const GameShader& other) = delete;
-	virtual ~GameShader() = default;
+	virtual ~GameShader() = default;//TODO
 	static GameShader* GetInstance();
 	bool operator=(const GameShader& other) = delete;
 	virtual void activate() override;
@@ -95,6 +109,7 @@ public:
 	void setSpecExp(const float& f);
 	void setAmbCol(const Vector& ambCol);
 	void addLight(const Light& light);
+	void generateShadows(std::vector <GameObject*> gameObjects);
 protected:
 	GameShader();
 };
